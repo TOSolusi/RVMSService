@@ -1,4 +1,13 @@
 {
-  "ServerAddress": "0.0.0.0:5050",
+  "ServerAddresshttp": "0.0.0.0:5050",
+  "ServerAddresshttps": "0.0.0.0:5051",
+  "Server": "SURFACE3\\SQLEXPRESS",
+  "Database": "RVMS",
+  "IntegratedSecurity": "true",
+  "UserID": "",
+  "Password": "",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=Surface3\\SQLEXPRESS;Database=RVMS;Integrated Security=True;TrustServerCertificate=True"
+  },
   "AllowedHosts": "*"
 }
