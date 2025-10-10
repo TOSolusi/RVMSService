@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RVMSService.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class initmigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

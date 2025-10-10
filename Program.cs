@@ -1,40 +1,54 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Linq;
 using RVMSService.Data;
 using Serilog;
-using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace RVMSService
 {
     public class Program
     {
+        public static JObject SettingsConfig { get; set; }
+        public static string FileSettings { get; set; }
+        public string ConnString { get; set; }
+        public string serverAddress { get; set; }
+        public static async Task Main(string[] args)
 
-        public static void Main(string[] args)
+
         {
+
             //Setting up to read json settings file and ensure that it will read on the application directory
-            
-            //string sharedSettingsPath = Path.Combine(exeDirectory, @"Settings\Settings.json");
-            //sharedSettingsPath = Path.GetFullPath(sharedSettingsPath);
+            //Settings file in Settings folder
 
-            //Configure Serilog to log to a file
            
-            
-          
-
-                var builder = WebApplication.CreateBuilder(args);
-
-                //string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                //string logPath = Path.Combine(exeDirectory, "Logs", "log-.txt");
-                //Log.Logger = new LoggerConfiguration()
-                //    .WriteTo.Console()
-                //    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-                //    .CreateLogger();
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string sharedSettingsPath = Path.Combine(exeDirectory, @"Settings\Settings.json");
+            sharedSettingsPath = Path.GetFullPath(sharedSettingsPath);
 
 
-                builder.Host.UseWindowsService();
+            SettingsConfig = JObject.Parse(System.IO.File.ReadAllText(sharedSettingsPath));
+            string httpUrl = $"http://{SettingsConfig["ServerAddresshttp"]?.ToString() ?? "localhost"}";
+            //string httpsUrl = $"https://{SettingsConfig["ServerAddresshttps"]?.ToString() ?? "localhost"}";
+
+            //            //$"Server={StringServer};Database={StringDatabase}; Integrated Security={IntegratedSecurity}; Encrypt=false;";
+            string connectionString = $"Server={SettingsConfig["Server"].ToString()};Database={SettingsConfig["Database"].ToString()}; Integrated Security={SettingsConfig["IntegratedSecurity"].ToString()}; Encrypt=false;";    //SettingsConfig["ConnectionString"]?.ToString() ?? "";
+            string secretKey = SettingsConfig["JwtKey"]?.ToString();
+            string issuer = SettingsConfig["JwtIssuer"]?.ToString();
+
+            var builder = WebApplication.CreateBuilder(args);
+
+            builder.Configuration.AddJsonFile(sharedSettingsPath, optional: false, reloadOnChange: true);
+
+            //Create as a windows service
+            builder.Host.UseWindowsService();
+            builder.WebHost.UseUrls(httpUrl);
             // Use Serilog as the logging provider
             builder.Host.UseSerilog((context, services, configuration) =>
                 {
@@ -45,40 +59,72 @@ namespace RVMSService
                         .WriteTo.File(logPath, rollingInterval: RollingInterval.Day);
                 });
 
-                builder.Services.AddDbContext<AppDBContext>(option =>
+            Console.WriteLine($"JWT key length: {Encoding.UTF8.GetBytes(secretKey).Length} bytes");
+
+            builder.Services.AddDbContext<AppDBContext>(option =>
+            {
+                option.UseSqlServer(connectionString);
+                //option.UseInMemoryDatabase("AuthDb");
+            });
+
+            // Add services to the container.
+            builder.Services.AddAuthorization();
+            builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = false;  // Disable email confirmation requirement
+                                                               //options.User.RequireUniqueEmail = false;       // Email doesn't need to be unique
+
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"; // Allowed characters in username
+
+            })
+                .AddRoles<IdentityRole>() // Add role
+                .AddEntityFrameworkStores<AppDBContext>();
+
+
+            var jwtKey = secretKey;
+            var jwtIssuer = issuer;
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
                 {
-                    option.UseSqlServer(builder.Configuration.GetConnectionString("defaultConnection"));
-                    //option.UseInMemoryDatabase("AuthDb");
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtIssuer,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                    };
                 });
 
-                // Add services to the container.
-                builder.Services.AddAuthorization();
-                builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-                    .AddEntityFrameworkStores<AppDBContext>();
 
+            builder.Services.AddControllers();
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
 
-                builder.Services.AddControllers();
-                // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-                builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen(options =>
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
                 {
-                    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
-                    {
-                        Title = "Auth Demo",
-                        Version = "v1"
+                    Title = "Auth Demo",
+                    Version = "v1"
 
-                    });
-                    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
-                    {
-                        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                        Description = "Please Enter the Token",
-                        Name = "Authorization",
-                        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-                        BearerFormat = "JWT",
-                        Scheme = "bearer"
-                    });
+                });
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
+                {
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Please Enter the Token",
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
+                });
 
-                    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -92,29 +138,72 @@ namespace RVMSService
                         []
                     }
                 });
-                }
-                );
+            });
 
 
-                var app = builder.Build();
+            var app = builder.Build();
 
-                app.MapIdentityApi<IdentityUser>();
-                // Configure the HTTP request pipeline.
-                if (app.Environment.IsDevelopment())
+            app.MapIdentityApi<IdentityUser>();
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers();
+
+            // Add this seed data method before app.Run()
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+                // Create Admin role if it doesn't exist
+                if (!await roleManager.RoleExistsAsync("Admin"))
                 {
-                    app.UseSwagger();
-                    app.UseSwaggerUI();
+                    await roleManager.CreateAsync(new IdentityRole("Admin"));
                 }
 
-                app.UseHttpsRedirection();
-                app.UseAuthentication();
-                app.UseAuthorization();
+                // Create Operator role if it doesn't exist
+                if (!await roleManager.RoleExistsAsync("Operator"))
+                {
+                    await roleManager.CreateAsync(new IdentityRole("Operator"));
+                }
+
+                //checking if there is user in the database
+                bool hasAnyUser = await userManager.Users.AnyAsync();
+                if (!hasAnyUser)
+                {
+                    // Create default admin user if it doesn't exist
+                    var adminUser = await userManager.FindByNameAsync("admin");
+                    if (adminUser == null)
+                    {
+                        var admin = new IdentityUser
+                        {
+                            UserName = "admin",
+                            Email = "admin@example.com",
+                            EmailConfirmed = true
+                        };
+
+                        var result = await userManager.CreateAsync(admin, "Admin1!");
+                        if (result.Succeeded)
+                        {
+                            // Assign Admin role to the admin user
+                            await userManager.AddToRoleAsync(admin, "Admin");
+                        }
+                    }
+                }
+
+
+            }
 
 
 
-                app.MapControllers();
-
-                app.Run();
+            app.Run();
            
 
             

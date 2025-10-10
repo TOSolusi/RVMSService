@@ -12,8 +12,8 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20250927164619_init")]
-    partial class init
+    [Migration("20251010151038_initmigration")]
+    partial class initmigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
