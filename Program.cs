@@ -74,6 +74,7 @@ namespace RVMSService
             builder.Services.AddScoped<IAuditTrailService , AuditTrailService>();
             builder.Services.AddScoped<IGateService, GateService>();
             builder.Services.AddScoped<IDestinationService, DestinationService>();
+            builder.Services.AddScoped<IVisitTypeService, VisitTypeService>();
 
             builder.Services.AddAuthorization();
                 builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>

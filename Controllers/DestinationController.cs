@@ -90,9 +90,42 @@ namespace RVMSService.Controllers
                 return StatusCode(500, new { message = "An error occurred while deleting the destination." });
             }
         }
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
+
+        [HttpGet("GetGestinationbyId")]
+        public async Task<List<DestinationModel?>> GetDestinationsById(Guid gateId)
+        {
+            try
+            {
+                _logger.LogInformation("GetDestinationsById called with Gate ID: {GateId}", gateId);
+                var destinations = await _destination.GetDestinationsByGateId(gateId);
+                _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count(), gateId);
+                return destinations;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) as needed
+                _logger.LogError(ex, "Error occurred while retrieving destinations by Gate ID");
+                return new List<DestinationModel?>();
+            }
+        }
+
+        [HttpPost("UpdateDestination")]
+        public async Task<bool> UpdateDestination(DestinationModel destination)
+        {
+            try
+            {
+               _logger.LogInformation("UpdateDestination called for ID: {DestinationId}", destination.DestinationId);
+                await _destination.UpdateDestination(destination);
+                _logger.LogInformation("Destination with ID: {DestinationId} updated successfully", destination.DestinationId);
+                return true;
+
+            }
+            catch
+            {
+                _logger.LogError("Error occurred while updating destination with ID: {DestinationId}", destination.DestinationId);
+                return false;
+            }
+
+        }
     }
 }

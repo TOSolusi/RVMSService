@@ -199,10 +199,31 @@ namespace RVMSService.Services
                 await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while deleting destination with ID: {DestinationId}", destinationId);
                 throw new Exception("An error occurred while deleting the destination.", ex);
-                return false;
+                //return false;
             }
         }
 
-    }
 
+        public async Task<List<DestinationModel>> GetDestinationsByGateId(Guid gateId)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving destinations for Gate ID: {GateId}", gateId);
+                var destinations = await _context.Destinations
+                    .Where(d => (d.GateId == gateId) && (d.Status == true) )
+                    .ToListAsync();
+                _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count, gateId);
+                return destinations;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) as needed
+                _logger.LogError(ex, "Error occurred while retrieving destinations for Gate ID: {GateId}", gateId);
+                throw new Exception("An error occurred while retrieving the destinations.", ex);
+            }
+        }
+
+        
+        
+    }
 }
