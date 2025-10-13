@@ -15,6 +15,8 @@ namespace RVMSService.Data
         public DbSet<VisitTypeModel> VisitTypes { get; set; }
         public DbSet<QrCodeModel> QrCodes { get; set; }
         public DbSet<GateModel> Gates { get; set; }
+        public DbSet<AuditTrailModel> AuditTrails { get; set; }
+
 
 
         public AppDBContext(DbContextOptions options) : base(options)
