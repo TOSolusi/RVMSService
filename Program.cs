@@ -73,8 +73,9 @@ namespace RVMSService
             // Add services to the container.
             builder.Services.AddScoped<IAuditTrailService , AuditTrailService>();
             builder.Services.AddScoped<IGateService, GateService>();
+            builder.Services.AddScoped<IDestinationService, DestinationService>();
 
-                builder.Services.AddAuthorization();
+            builder.Services.AddAuthorization();
                 builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
                 {
                     options.SignIn.RequireConfirmedEmail = false;  // Disable email confirmation requirement

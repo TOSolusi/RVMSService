@@ -42,6 +42,7 @@ namespace RVMSService.Controllers
 
         }
 
+        //get all gates
         [HttpGet("getGates")]
         public async Task<IActionResult> GetGates()
         {
