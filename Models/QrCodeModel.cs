@@ -11,6 +11,7 @@ namespace RVMSService.Models
         public DateTime LastUsed { get; set; }
         public bool Status { get; set; } //active/inactive
         public bool Used { get; set; } //used/not used
+        public Guid? GateId { get; set; } //nullable
 
     }
 }

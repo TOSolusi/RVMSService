@@ -75,6 +75,9 @@ namespace RVMSService
             builder.Services.AddScoped<IGateService, GateService>();
             builder.Services.AddScoped<IDestinationService, DestinationService>();
             builder.Services.AddScoped<IVisitTypeService, VisitTypeService>();
+            builder.Services.AddScoped<IQRCodeService, QRCodeService>();
+            builder.Services.AddScoped<IVisitorService, VisitorService>();
+            builder.Services.AddScoped<IVisitService, VisitService>();
 
             builder.Services.AddAuthorization();
                 builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
