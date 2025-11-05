@@ -1,7 +1,7 @@
 {
   "ServerAddresshttp": "0.0.0.0:5050",
   "ServerAddresshttps": "0.0.0.0:5051",
-  "Server": "SURFACE3\\SQLEXPRESS",
+  "Server": "ASUSZENLAPTOP",
   "Database": "RVMS",
   "IntegratedSecurity": "true",
   "UserID": "",
