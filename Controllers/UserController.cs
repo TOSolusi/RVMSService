@@ -118,6 +118,7 @@ namespace RVMSService.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
+            //return Ok(new { user = user.UserName, roles = roles.FirstOrDefault(), token = tokenString });
             return Ok(new { token = tokenString });
         }
 
