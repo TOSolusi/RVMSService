@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Linq;
 using RVMSService.Data;
+using RVMSService.Models;
 using RVMSService.Services;
 using Serilog;
 using System.Text;
@@ -81,7 +82,7 @@ namespace RVMSService
             builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
 
             builder.Services.AddAuthorization();
-                builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
+                builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
                 {
                     options.SignIn.RequireConfirmedEmail = false;  // Disable email confirmation requirement
                                                                    //options.User.RequireUniqueEmail = false;       // Email doesn't need to be unique

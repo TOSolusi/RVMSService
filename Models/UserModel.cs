@@ -1,7 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace RVMSService.Models
 {
+    // Add this new class
+    public class ApplicationUser : IdentityUser
+    {
+        public string? FullName { get; set; }
+    }
 
     public class UserRegisterModel
     {
@@ -11,6 +17,7 @@ namespace RVMSService.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
         public string Email { get; set; } // Optional
+        public string? FullName { get; set; }
     }
 
     public class UserLoginModel
@@ -36,5 +43,6 @@ namespace RVMSService.Models
 
         public string Email { get; set; } // Optional
         public string role { get; set; }
+        public string? FullName { get; set; }
     }
 }

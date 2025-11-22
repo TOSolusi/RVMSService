@@ -7,8 +7,9 @@ using System.Collections.Generic;
 
 namespace RVMSService.Data
 {
-    public class AppDBContext : IdentityDbContext<IdentityUser>
+    public class AppDBContext : IdentityDbContext<ApplicationUser>
     {
+
         public DbSet<DestinationModel> Destinations { get; set; }
         public DbSet<VisitModel> Visits { get; set; }
         public DbSet<VisitorModel> Visitors { get; set; }
