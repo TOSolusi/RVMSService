@@ -13,11 +13,11 @@ namespace RVMSService.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public UserController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
+        public UserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -51,10 +51,11 @@ namespace RVMSService.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = new IdentityUser
+            var user = new ApplicationUser
             {
                 UserName = model.UserName,
-                Email = model.Email
+                Email = model.Email,
+                FullName = model.FullName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -93,6 +94,10 @@ namespace RVMSService.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!result.Succeeded)
                 return Unauthorized(new { message = "Invalid username or password." });
+
+            // Update last login time
+            user.LastLoginTime = DateTime.Now;
+            await _userManager.UpdateAsync(user);
 
             // Generate JWT token
             var roles = await _userManager.GetRolesAsync(user);
@@ -137,7 +142,7 @@ namespace RVMSService.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            IdentityUser user = null;
+            ApplicationUser user = null;
 
             //Check if admin
             if (User.IsInRole("Admin"))
@@ -211,11 +216,15 @@ namespace RVMSService.Controllers
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
+                var isLockedOut = await _userManager.IsLockedOutAsync(user);
                 userList.Add(new UserModel
                 {
                     UserName = user.UserName,
                     Email = user.Email,
-                    role = string.Join(", ", roles)
+                    role = string.Join(", ", roles),
+                    FullName = user.FullName,
+                    LastLoginTime = user.LastLoginTime,
+                    IsLockedOut = isLockedOut   
                 });
             }
 
@@ -230,6 +239,46 @@ namespace RVMSService.Controllers
             // For JWT, logout is handled client-side by removing the token.
             // Optionally, you can implement token blacklisting here if needed.
             return Ok(new { message = "Logout successful. Please remove the token on the client." });
+        }
+
+        // POST: api/User/lockout/{username}
+        [Authorize(Roles = "Admin")]
+        [HttpPost("lockout/{userName}")]
+        public async Task<IActionResult> LockoutUser(string userName, [FromBody] int lockoutMinutes = 30)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            var lockoutEnd = DateTimeOffset.UtcNow.AddYears(50);
+            var result = await _userManager.SetLockoutEndDateAsync(user, lockoutEnd);
+
+            if (result.Succeeded)
+                return Ok(new { message = $"User {userName} locked out until {lockoutEnd}." });
+
+            return BadRequest(result.Errors);
+        }
+
+        // POST: api/User/unlock/{username}
+        [Authorize(Roles = "Admin")]
+        [HttpPost("unlock/{userName}")]
+        public async Task<IActionResult> UnlockUser(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            // Reset lockout end date
+            var result = await _userManager.SetLockoutEndDateAsync(user, null);
+
+            if (result.Succeeded)
+            {
+                // Reset access failed count
+                await _userManager.ResetAccessFailedCountAsync(user);
+                return Ok(new { message = $"User {userName} unlocked successfully." });
+            }
+
+            return BadRequest(result.Errors);
         }
     }
 }

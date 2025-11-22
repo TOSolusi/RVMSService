@@ -173,7 +173,7 @@ namespace RVMSService
                 using (var scope = app.Services.CreateScope())
                 {
                     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
                     // Create Admin role if it doesn't exist
                     if (!await roleManager.RoleExistsAsync("Admin"))
@@ -181,8 +181,14 @@ namespace RVMSService
                         await roleManager.CreateAsync(new IdentityRole("Admin"));
                     }
 
-                    // Create Operator role if it doesn't exist
-                    if (!await roleManager.RoleExistsAsync("Operator"))
+                // Create Supervisor role if it doesn't exist
+                if (!await roleManager.RoleExistsAsync("Supervisor"))
+                {
+                    await roleManager.CreateAsync(new IdentityRole("Supervisor"));
+                }
+
+                // Create Operator role if it doesn't exist
+                if (!await roleManager.RoleExistsAsync("Operator"))
                     {
                         await roleManager.CreateAsync(new IdentityRole("Operator"));
                     }
@@ -195,11 +201,12 @@ namespace RVMSService
                         var adminUser = await userManager.FindByNameAsync("admin");
                         if (adminUser == null)
                         {
-                            var admin = new IdentityUser
+                            var admin = new ApplicationUser
                             {
                                 UserName = "admin",
                                 Email = "admin@example.com",
-                                EmailConfirmed = true
+                                EmailConfirmed = true,
+                                FullName = "System Administrator"
                             };
 
                             var result = await userManager.CreateAsync(admin, "Admin1!");

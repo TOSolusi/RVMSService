@@ -7,6 +7,7 @@ namespace RVMSService.Models
     public class ApplicationUser : IdentityUser
     {
         public string? FullName { get; set; }
+        public DateTime? LastLoginTime { get; set; }
     }
 
     public class UserRegisterModel
@@ -44,5 +45,7 @@ namespace RVMSService.Models
         public string Email { get; set; } // Optional
         public string role { get; set; }
         public string? FullName { get; set; }
+        public DateTime? LastLoginTime { get; set; }
+        public bool? IsLockedOut { get; set; } 
     }
 }
