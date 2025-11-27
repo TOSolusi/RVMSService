@@ -85,7 +85,15 @@ namespace RVMSService
                 builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options =>
                 {
                     options.SignIn.RequireConfirmedEmail = false;  // Disable email confirmation requirement
-                                                                   //options.User.RequireUniqueEmail = false;       // Email doesn't need to be unique
+                                                                   //options.User.RequireUniqueEmail = false;  
+                                                                   // Email doesn't need to be unique
+                                                                   // Configure password requirements (less restrictive but still somewhat secure)
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequiredLength = 4;              // At least 4 characters
+                    options.Password.RequiredUniqueChars = 1;         // At least 1 unique character
 
                     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"; // Allowed characters in username
 
