@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using RVMSService.Models;
+using System.Diagnostics.Eventing.Reader;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -124,11 +125,11 @@ namespace RVMSService.Controllers
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             //return Ok(new { user = user.UserName, roles = roles.FirstOrDefault(), token = tokenString });
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 token = tokenString,
                 userName = user.UserName,
-                roles   = roles.FirstOrDefault()
+                roles = roles.FirstOrDefault()
 
             });
         }
@@ -219,12 +220,13 @@ namespace RVMSService.Controllers
                 var isLockedOut = await _userManager.IsLockedOutAsync(user);
                 userList.Add(new UserModel
                 {
+                    Id = Guid.Parse(user.Id),
                     UserName = user.UserName,
                     Email = user.Email,
-                    role = string.Join(", ", roles),
+                    Role = string.Join(", ", roles),
                     FullName = user.FullName,
                     LastLoginTime = user.LastLoginTime,
-                    IsLockedOut = isLockedOut   
+                    IsLockedOut = isLockedOut
                 });
             }
 
@@ -279,6 +281,56 @@ namespace RVMSService.Controllers
             }
 
             return BadRequest(result.Errors);
+        }
+
+        //POST : api/User/update/{operatorModel}
+        [Authorize(Roles = "Admin")]
+        [HttpPost("update")]
+        public async Task<IActionResult> UpdateOperator([FromBody] UserModel operatorModel)
+        {
+            var user = await _userManager.FindByIdAsync(operatorModel.Id.ToString());
+            if (user == null)
+                return BadRequest(new { message = "User not found." });
+            user.FullName = operatorModel.FullName;
+            user.UserName = operatorModel.UserName;
+            user.Email = operatorModel.Email;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)//update data success
+            {
+                //update role
+                var roleresult = await _userManager.GetRolesAsync(user);
+                if (!roleresult.Contains(operatorModel.Role))
+                {
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, roleresult);
+                    if (removeResult.Succeeded)
+                    {
+                        var addResult = await _userManager.AddToRoleAsync(user, operatorModel.Role);
+                        if (addResult.Succeeded)
+                        {
+                            return Ok(new { message = "User updated successfully." });
+                        }
+                        else
+                        {
+                            return BadRequest(addResult.Errors);
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(removeResult.Errors);
+                    }
+                }
+                else
+                {
+                    return Ok(new { message = "User updated successfully." });
+                }
+
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
         }
     }
 }
