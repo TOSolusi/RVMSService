@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RVMSService.Models;
 using RVMSService.Services;
 
@@ -20,6 +21,7 @@ namespace RVMSService.Controllers
         }
 
         // GET: api/User/addGate
+        [Authorize(Roles = "Admin")]
         [HttpPost("addGate")]
         
         public async Task<IActionResult> AddGate([FromBody] GateModel gate)
@@ -43,6 +45,7 @@ namespace RVMSService.Controllers
         }
 
         //get all gates
+        [Authorize(Roles = "Admin")]
         [HttpGet("getGates")]
         public async Task<IActionResult> GetGates()
         {
@@ -61,6 +64,7 @@ namespace RVMSService.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("updateGate")]
         public async Task<IActionResult> UpdateGate([FromBody] GateModel gate)
         {
@@ -79,6 +83,7 @@ namespace RVMSService.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("deleteGate")]
         public async Task<IActionResult> DeleteGate([FromBody] GateModel gate)
         {

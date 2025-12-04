@@ -6,7 +6,7 @@ namespace RVMSService.Models
     public class GateModel
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        
         public Guid? GateId { get; set; }
         public string GateName { get; set; }
         public string Description { get; set; }
