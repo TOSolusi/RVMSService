@@ -84,20 +84,20 @@ namespace RVMSService.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("deleteGate")]
-        public async Task<IActionResult> DeleteGate([FromBody] GateModel gate)
+        [HttpDelete("deleteGate")]
+        public async Task<IActionResult> DeleteGate([FromBody] Guid id)
         {
             try
             {
-                _logger.LogInformation("DeleteGate called for GateId: {GateId}", gate.GateId);
-                await _gateService.DeleteGate(gate);
-                _logger.LogInformation("Gate deleted successfully for GateId: {GateId}", gate.GateId);
+                _logger.LogInformation("DeleteGate called for GateId: {GateId}", id);
+                await _gateService.DeleteGate(id);
+                _logger.LogInformation("Gate deleted successfully for GateId: {GateId}", id);
                 return Ok(new { message = "Delete Gate Success" });
             }
             catch (Exception ex)
             {
                 // Log the exception (ex) as needed
-                _logger.LogError(ex, "Error occurred while deleting gate with GateId: {GateId}", gate.GateId);
+                _logger.LogError(ex, "Error occurred while deleting gate with GateId: {GateId}", id);
                 return StatusCode(500, new { message = "An error occurred while deleting the gate." });
             }
         }

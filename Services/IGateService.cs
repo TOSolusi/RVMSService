@@ -7,7 +7,7 @@ namespace RVMSService.Services
         Task<Guid?> AddGate(GateModel gate);
         Task<List<GateModel>> GetAllGates();
         Task UpdateGate(GateModel gate);
-        Task DeleteGate(GateModel gate);
+        Task DeleteGate(Guid id);
         Task<GateModel> GetGateById(Guid gateId);
 
 

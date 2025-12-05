@@ -113,7 +113,7 @@ namespace RVMSService.Services
              
                 existingGate.GateName = gate.GateName;
                 existingGate.Description = gate.Description;
-                existingGate.UpdatedAt = DateTime.UtcNow;
+                existingGate.UpdatedAt = DateTime.Now;
                 existingGate.Status = gate.Status;
                 // Update other properties as needed
                 await _context.SaveChangesAsync();
@@ -123,7 +123,7 @@ namespace RVMSService.Services
                 {
                     //UserId = /* get user id from context */
                     Description = $"Update Gate {gate.GateName} information",
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTime.Now,
                     Status = "Success",
                     Category = "Gate"
                 };
@@ -136,7 +136,7 @@ namespace RVMSService.Services
                 {
                     //UserId = , /* get user id from context */
                     Description = $"Update Gate {gate.GateName}",
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTime.Now,
                     Status = "Failure",
                     Category = "Gate"
                 };
@@ -147,23 +147,23 @@ namespace RVMSService.Services
 
         }
 
-        public async Task DeleteGate(GateModel gate)
+        public async Task DeleteGate(Guid id)
         {
             try
             {
-                var existingGate = await _context.Gates.FindAsync(gate.GateId);
+                var existingGate = await _context.Gates.FindAsync(id);
                 if (existingGate == null)
                 {
                     throw new Exception("Gate not found");
                 }
                 _context.Gates.Remove(existingGate);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Gate deleted with ID: {GateId}, Name: {GateName}", gate.GateId, gate.GateName);
+                _logger.LogInformation("Gate deleted with ID: {GateId}, with name {GateName}", id, existingGate.GateName);
                 //record audit trail
                 var audit = new AuditTrailModel
                 {
-                    //UserId = /* get user id from context */
-                    Description = $"Delete Gate {gate.GateName}",
+
+                    Description = $"Delete Gate {existingGate.GateName}",
                     Timestamp = DateTime.UtcNow,
                     Status = "Success",
                     Category = "Gate"
@@ -172,19 +172,20 @@ namespace RVMSService.Services
             }
             catch (Exception ex)
             {
-                // Log the exception (ex) as needed
-                var audit = new AuditTrailModel
-                {
-                    //UserId = , /* get user id from context */
-                    Description = $"Delete Gate {gate.GateName}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Failure",
-                    Category = "Gate"
-                };
-                await _auditTrail.RecordAsync(audit);
+
+                //var audit = new AuditTrailModel
+                //{
+                //    //UserId = /* get user id from context */
+                //    Description = $"Delete Gate {existingGate.GateName}",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Success",
+                //    Category = "Gate"
+                //};
+                //await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while deleting gate from database");
                 throw new Exception("An error occurred while deleting the gate.", ex);
             }
+           
         }
 
 
