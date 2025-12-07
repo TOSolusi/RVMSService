@@ -115,13 +115,13 @@ namespace RVMSService.Controllers
                     return NotFound(new { message = "Gate not found." });
                 }
                 _logger.LogInformation("Gate retrieved successfully for GateId: {GateId}", gateId);
-                return Ok(gate);
+                return Ok(gate) ;
             }
             catch (Exception ex)
             {
                 // Log the exception (ex) as needed
                 _logger.LogError(ex, "Error occurred while retrieving gate with GateId: {GateId}", gateId);
-                return StatusCode(500, new { message = ex });
+                return StatusCode(500, new { message = "An error occurred while retrieving the gate."   });
             }
         }
 
