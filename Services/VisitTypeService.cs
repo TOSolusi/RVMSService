@@ -174,7 +174,7 @@ namespace RVMSService.Services
             try
             {
                 _logger.LogInformation("Retrieving active visit types");
-                var visitTypes = await _context.VisitTypes.Where(vt => vt.Status).ToListAsync();
+                var visitTypes = await _context.VisitTypes.Where(vt => vt.Status == true).ToListAsync();
                 _logger.LogInformation("Retrieved {Count} active visit types", visitTypes.Count);
                 return visitTypes;
             }

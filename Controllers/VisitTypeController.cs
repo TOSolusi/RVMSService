@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RVMSService.Models;
 using RVMSService.Services;
 
@@ -18,6 +19,7 @@ namespace RVMSService.Controllers
         }
 
         //add visit type
+        [Authorize(Roles = "Admin")]
         [HttpPost("addVisitType")]
         public async Task<IActionResult> AddVisitType([FromBody] Models.VisitTypeModel visitType)
         {
@@ -37,6 +39,7 @@ namespace RVMSService.Controllers
         }
 
         //get all visit type list
+        [Authorize(Roles = "Admin")]
         [HttpGet("getVisitTypes")]
         public async Task<List<VisitTypeModel>> GetVisitTypes()
         {
@@ -54,6 +57,7 @@ namespace RVMSService.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("deleteVisitType/{typeId}")]
         public async Task<IActionResult> DeleteVisitType(Guid typeId)
         {
@@ -80,6 +84,7 @@ namespace RVMSService.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [Route("updateVisitType")]
         public async Task<IActionResult> UpdateVisitType([FromBody] Models.VisitTypeModel visitType)
         {
@@ -98,6 +103,7 @@ namespace RVMSService.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         [Route("getActiveVisitTypes")]
         public async Task<List<VisitTypeModel>> GetActiveVisitTypes()
         {
