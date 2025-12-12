@@ -133,6 +133,7 @@ namespace RVMSService.Services
                 }
                 // Update fields
                 existingVisitType.TypeVisit = visitType.TypeVisit;
+                existingVisitType.TypeDescription = visitType.TypeDescription;
                 existingVisitType.TypeColorBadge = visitType.TypeColorBadge;
                 existingVisitType.UpdatedAt = DateTime.UtcNow;
                 existingVisitType.Status = visitType.Status;
@@ -182,6 +183,43 @@ namespace RVMSService.Services
             {
                 _logger.LogError(ex, "Error occurred while retrieving active visit types from database");
                 throw new Exception("An error occurred while retrieving active visit types.", ex);
+            }
+        }
+
+        public async Task<bool> SetDefault(Guid? visitTypeId)
+        {
+            try
+            {
+                if (!visitTypeId.HasValue)
+                {
+                    throw new Exception("Visit Type ID cannot be null");
+                }
+                
+                _logger.LogInformation($"Setting Visit Type with ID: {visitTypeId} as default");
+                // First, unset the current default visit type
+                var currentDefault = await _context.VisitTypes.FirstOrDefaultAsync(vt => vt.Default == true);
+                if (currentDefault != null)
+                {
+                    currentDefault.Default = false;
+                    _context.VisitTypes.Update(currentDefault);
+                }
+                // Now, set the specified visit type as default
+                var newDefault = await _context.VisitTypes.FindAsync(visitTypeId);
+                if (newDefault == null)
+                {
+                    _logger.LogWarning($"Visit Type with ID: {visitTypeId} not found");
+                    throw new Exception("Visit type not found");
+                }
+                newDefault.Default = true;
+                _context.VisitTypes.Update(newDefault);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Visit Type with ID: {visitTypeId} set as default successfully");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while setting Visit Type with ID: {visitTypeId} as default");
+                throw new Exception("An error occurred while setting the Visit Type as default.", ex);
             }
         }
     }

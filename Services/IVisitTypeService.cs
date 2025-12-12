@@ -10,7 +10,7 @@ namespace RVMSService.Services
        
         Task UpdateVisitType(VisitTypeModel visitType);
         Task<List<VisitTypeModel>> GetActiveVisitTypes();
-
+        Task<bool> SetDefault(Guid? visitTypeId);
 
     }
 }

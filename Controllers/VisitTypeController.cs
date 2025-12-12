@@ -121,6 +121,33 @@ namespace RVMSService.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [Route("SetDefault")]
+        public async Task<IActionResult> SetDefault([FromBody] Guid? typeId)
+        {
+            try
+            {
+                _logger.LogInformation("SetDefault called for ID: {TypeId}", typeId);
+                var result = await _visitType.SetDefault(typeId);
+                if (result)
+                {
+                    _logger.LogInformation("Visit type with ID: {TypeId} set as default successfully", typeId);
+                    return Ok(new { message = "Set default visit type Success" });
+                }
+                else
+                {
+                    _logger.LogWarning("Visit type with ID: {TypeId} not found", typeId);
+                    return NotFound(new { message = "Visit type not found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while setting default visit type with ID: {TypeId}", typeId);
+                return StatusCode(500, new { message = "An error occurred while setting the default visit type." });
+            }
+        }
+
         //public IActionResult Index()
         //{
         //    return View();

@@ -7,6 +7,7 @@ namespace RVMSService.Models
         [Key]
         public Guid? TypeId { get; set; }
         public string? TypeVisit { get; set; }
+        public string? TypeDescription { get; set; }
         public string? TypeColorBadge { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool? Status { get; set; } //active or not active
