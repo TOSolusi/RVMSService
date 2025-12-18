@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RVMSService.Data;
 
@@ -11,9 +12,11 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251214160225_destinationmodelchanged")]
+    partial class destinationmodelchanged
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -265,14 +268,12 @@ namespace RVMSService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Gates")
+                    b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Owner_Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Owner_Name")
@@ -280,6 +281,7 @@ namespace RVMSService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Owner_Phone")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
@@ -303,6 +305,9 @@ namespace RVMSService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("DestinationModelDestinationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("GateName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -314,6 +319,8 @@ namespace RVMSService.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("GateId");
+
+                    b.HasIndex("DestinationModelDestinationId");
 
                     b.ToTable("Gates");
                 });
@@ -505,6 +512,18 @@ namespace RVMSService.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RVMSService.Models.GateModel", b =>
+                {
+                    b.HasOne("RVMSService.Models.DestinationModel", null)
+                        .WithMany("Gates")
+                        .HasForeignKey("DestinationModelDestinationId");
+                });
+
+            modelBuilder.Entity("RVMSService.Models.DestinationModel", b =>
+                {
+                    b.Navigation("Gates");
                 });
 #pragma warning restore 612, 618
         }

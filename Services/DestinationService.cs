@@ -23,21 +23,48 @@ namespace RVMSService.Services
             {
                 _logger.LogInformation("Adding destination to database");
 
-                // Implementation for adding destination
+                //List<Guid?> gateIds = null;
+
+                //// If gates are provided, extract their IDs and clear the collection
+                //if (destination.Gates != null && destination.Gates.Any())
+                //{
+                //    gateIds = destination.Gates.Select(g => g.GateId).ToList();
+                //    destination.Gates = null; // Clear to prevent EF Core from trying to insert them
+                //}
+
+                // Add the destination first
                 await _context.Destinations.AddAsync(destination);
                 await _context.SaveChangesAsync();
+
+                
                 _logger.LogInformation("Destination added with ID: {DestinationId} and address {Address}", destination.DestinationId, destination.Address);
 
+                //// Now update the existing gates to link them to this destination
+                //if (gateIds != null && gateIds.Any())
+                //{
+                //    var gatesToUpdate = await _context.Gates
+                //        .Where(g => gateIds.Contains(g.GateId))
+                //        .ToListAsync();
+
+                //    foreach (var gate in gatesToUpdate)
+                //    {
+                //        gate.DestinationId = destination.DestinationId;
+                //    }
+
+                //    await _context.SaveChangesAsync();
+                //    _logger.LogInformation("Updated {Count} gates to link with destination {DestinationId}",
+                //        gatesToUpdate.Count, destination.DestinationId);
+                //}
                 //record audit trail
-                var audit = new AuditTrailModel
-                {
-                    //UserId = /* get user id from context */
-                    Description = $"Add Destination {destination.Address} with gate {destination.GateId}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Success",
-                    Category = "Destination"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    //UserId = /* get user id from context */
+                //    Description = $"Add Destination {destination.Address} with gate {destination.GateId}",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Success",
+                //    Category = "Destination"
+                //};
+                //await _auditTrail.RecordAsync(audit);
 
                 // After SaveChangesAsync, destination.DestinationId will contain the generated GUID
                 return destination.DestinationId;
@@ -119,7 +146,7 @@ namespace RVMSService.Services
                     throw new Exception("Destination not found");
                 }
                 // Update fields
-                existingDestination.GateId = destination.GateId;
+                //existingDestination.GateId = destination.GateId;
                 existingDestination.Address = destination.Address;
                 existingDestination.Owner_Name = destination.Owner_Name;
                 existingDestination.Owner_Email = destination.Owner_Email;
@@ -133,7 +160,7 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
-                    Description = $"Update Destination {destination.Address} with gate {destination.GateId}",
+                   // Description = $"Update Destination {destination.Address} with gate {destination.GateId}",
                     Timestamp = DateTime.UtcNow,
                     Status = "Success",
                     Category = "Destination"
@@ -176,7 +203,7 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
-                    Description = $"Delete Destination {existingDestination.Address} with gate {existingDestination.GateId}",
+                   // Description = $"Delete Destination {existingDestination.Address} with gate {existingDestination.GateId}",
                     Timestamp = DateTime.UtcNow,
                     Status = "Success",
                     Category = "Destination"
@@ -209,11 +236,12 @@ namespace RVMSService.Services
             try
             {
                 _logger.LogInformation("Retrieving destinations for Gate ID: {GateId}", gateId);
-                var destinations = await _context.Destinations
-                    .Where(d => (d.GateId == gateId) && (d.Status == true) )
-                    .ToListAsync();
-                _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count, gateId);
-                return destinations;
+                //var destinations = await _context.Destinations
+                //    .Where(d => (d.GateId == gateId) && (d.Status == true) )
+                //     .ToListAsync();
+                // _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count, gateId);
+                //return destinations;
+                return null;
             }
             catch (Exception ex)
             {

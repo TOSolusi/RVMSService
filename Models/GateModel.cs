@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RVMSService.Models
@@ -12,5 +13,6 @@ namespace RVMSService.Models
         public string Description { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool Status { get; set; }
+       
     }
 }
