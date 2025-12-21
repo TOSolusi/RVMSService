@@ -23,50 +23,15 @@ namespace RVMSService.Services
             {
                 _logger.LogInformation("Adding destination to database");
 
-                //List<Guid?> gateIds = null;
-
-                //// If gates are provided, extract their IDs and clear the collection
-                //if (destination.Gates != null && destination.Gates.Any())
-                //{
-                //    gateIds = destination.Gates.Select(g => g.GateId).ToList();
-                //    destination.Gates = null; // Clear to prevent EF Core from trying to insert them
-                //}
-
-                // Add the destination first
+             
                 await _context.Destinations.AddAsync(destination);
                 await _context.SaveChangesAsync();
 
                 
                 _logger.LogInformation("Destination added with ID: {DestinationId} and address {Address}", destination.DestinationId, destination.Address);
 
-                //// Now update the existing gates to link them to this destination
-                //if (gateIds != null && gateIds.Any())
-                //{
-                //    var gatesToUpdate = await _context.Gates
-                //        .Where(g => gateIds.Contains(g.GateId))
-                //        .ToListAsync();
-
-                //    foreach (var gate in gatesToUpdate)
-                //    {
-                //        gate.DestinationId = destination.DestinationId;
-                //    }
-
-                //    await _context.SaveChangesAsync();
-                //    _logger.LogInformation("Updated {Count} gates to link with destination {DestinationId}",
-                //        gatesToUpdate.Count, destination.DestinationId);
-                //}
-                //record audit trail
-                //var audit = new AuditTrailModel
-                //{
-                //    //UserId = /* get user id from context */
-                //    Description = $"Add Destination {destination.Address} with gate {destination.GateId}",
-                //    Timestamp = DateTime.UtcNow,
-                //    Status = "Success",
-                //    Category = "Destination"
-                //};
-                //await _auditTrail.RecordAsync(audit);
-
-                // After SaveChangesAsync, destination.DestinationId will contain the generated GUID
+            
+               
                 return destination.DestinationId;
 
             }
@@ -154,32 +119,16 @@ namespace RVMSService.Services
                 existingDestination.Notes = destination.Notes;
                 existingDestination.Updated_At = DateTime.UtcNow; // Update timestamp
                 existingDestination.Status = destination.Status;
+                existingDestination.Gates = destination.Gates;
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Destination with ID: {DestinationId} updated successfully", destination.DestinationId);
-                //record audit trail
-                var audit = new AuditTrailModel
-                {
-                    //UserId = /* get user id from context */
-                   // Description = $"Update Destination {destination.Address} with gate {destination.GateId}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Success",
-                    Category = "Destination"
-                };
-                await _auditTrail.RecordAsync(audit);
+             
 
             }
             catch (Exception ex)
             {
-                // Log the exception (ex) as needed
-                var audit = new AuditTrailModel
-                {
-                    //UserId = , /* get user id from context */
-                    Description = $"Update Destination {destination.Address} fail",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Failure",
-                    Category = "Destination"
-                };
-                await _auditTrail.RecordAsync(audit);
+       
+                //await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while updating destination with ID: {DestinationId}", destination.DestinationId);
                 throw new Exception("An error occurred while updating the destination.", ex);
             }
@@ -200,30 +149,30 @@ namespace RVMSService.Services
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Destination with ID: {DestinationId} deleted successfully", destinationId);
                 //record audit trail
-                var audit = new AuditTrailModel
-                {
-                    //UserId = /* get user id from context */
-                   // Description = $"Delete Destination {existingDestination.Address} with gate {existingDestination.GateId}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Success",
-                    Category = "Destination"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    //UserId = /* get user id from context */
+                //   // Description = $"Delete Destination {existingDestination.Address} with gate {existingDestination.GateId}",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Success",
+                //    Category = "Destination"
+                //};
+                //await _auditTrail.RecordAsync(audit);
                 return true;
 
             }
             catch (Exception ex)
             {
                 // Log the exception (ex) as needed
-                var audit = new AuditTrailModel
-                {
-                    //UserId = , /* get user id from context */
-                    Description = $"Delete Destination with ID {destinationId} fail",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Failure",
-                    Category = "Destination"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    //UserId = , /* get user id from context */
+                //    Description = $"Delete Destination with ID {destinationId} fail",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Failure",
+                //    Category = "Destination"
+                //};
+                //await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while deleting destination with ID: {DestinationId}", destinationId);
                 throw new Exception("An error occurred while deleting the destination.", ex);
                 //return false;

@@ -9,7 +9,7 @@ namespace RVMSService.Models
         [Key]
         public Guid DestinationId { get; set; }
         //public List<GateModel>? Gates { get; set; }
-        public string Gates { get; set; }
+        public string? Gates { get; set; }
         [NotMapped]
         public List<Guid> GateIds
         {
