@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RVMSService.Models;
 using RVMSService.Services;
 
@@ -21,6 +22,7 @@ namespace RVMSService.Controllers
 
 
         // GET: api/User/addGate
+        [Authorize(Roles = "Admin")]
         [HttpPost("addDestination")]
 
         public async Task<IActionResult> AddDestination([FromBody] DestinationModel destination)
@@ -45,7 +47,7 @@ namespace RVMSService.Controllers
 
 
         //get all destination list
-
+        
         [HttpGet("getDestinations")]
         public async Task<List<DestinationModel>> GetDestinations()
         {
@@ -64,7 +66,7 @@ namespace RVMSService.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("deleteDestination/{destinationId}")]
         public async Task<IActionResult> DeleteDestination(Guid destinationId)
         {
@@ -91,6 +93,7 @@ namespace RVMSService.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetGestinationbyId")]
         public async Task<List<DestinationModel?>> GetDestinationsById(Guid gateId)
         {
@@ -109,6 +112,7 @@ namespace RVMSService.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("UpdateDestination")]
         public async Task<bool> UpdateDestination(DestinationModel destination)
         {
