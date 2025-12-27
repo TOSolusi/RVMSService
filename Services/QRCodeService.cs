@@ -12,19 +12,23 @@ namespace RVMSService.Services
 
         public QRCodeService(AppDBContext context, ILogger<QRCodeService> logger, IAuditTrailService auditTrail)
         {
-            context = _context;
+            _context = context;
             _logger = logger;
             _auditTrail = auditTrail;
 
         }
 
-        public async Task<Guid?> AddQRCode(QrCodeModel qrCode)
+        public async Task<Guid?> AddQRCode(QrCodeModel qrCode, AuditTrailModel auditTrail)
         {
             try
             {
 
                 _logger.LogInformation("Adding new QR Code");
 
+
+                qrCode.CreatedAt = DateTime.Now;
+                qrCode.Status = true;
+                qrCode.Used = false;
                 // Implementation for adding destination
                 await _context.QrCodes.AddAsync(qrCode);
                 await _context.SaveChangesAsync();
@@ -35,9 +39,12 @@ namespace RVMSService.Services
                 {
                     //UserId = /* get user id from context */
                     Description = $"Add QR Code {qrCode.QrString}",
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTime.Now,
                     Status = "Success",
-                    Category = "QR Code"
+                    Category = "QR Code",
+                    UserName = auditTrail.UserName,
+                    Location = auditTrail.Location
+
                 };
                 await _auditTrail.RecordAsync(audit);
 
@@ -50,9 +57,11 @@ namespace RVMSService.Services
                 {
                     //UserId = , /* get user id from context */
                     Description = $"Add QR Code {qrCode.QrString} fail",
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTime.Now,
                     Status = "Failure",
-                    Category = "QR Code"
+                    Category = "QR Code",
+                    UserName = auditTrail.UserName,
+                    Location = auditTrail.Location
                 };
                 await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while adding QR Code to database");

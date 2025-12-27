@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RVMSService.Models;
 using RVMSService.Services;
 
@@ -19,13 +21,21 @@ namespace RVMSService.Controllers
         }
 
         //Add QR Code
+        [Authorize(Roles = "Admin")]
         [HttpPost("addQRCode")]
-        public async Task<IActionResult> AddQRCode([FromBody] QrCodeModel qRCode)
+        public async Task<IActionResult> AddQRCode([FromBody] DOTQRModel request)
         {
+            if (request == null || request.QrCode == null)
+            {
+                return BadRequest("QR Code data is required");
+            }
+
             try
             {
-                _logger.LogInformation("Add QR Code with code : {Code}", qRCode.QrString);
-                var generatedId = await _qRCodeService.AddQRCode(qRCode);
+                _logger.LogInformation("Add QR Code with code : {Code}", request.QrCode.QrString);
+               
+
+                var generatedId = await _qRCodeService.AddQRCode(request.QrCode, request.AuditTrail);
                 _logger.LogInformation("QR Code added with ID: {qRCodeId}", generatedId);
                 return Ok(new { message = "Add QR Code Success", qRCodeId = generatedId });
             }
@@ -55,6 +65,7 @@ namespace RVMSService.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("deleteQRCode/{qrCodeId}")]
         public async Task<IActionResult> DeleteQRCode(Guid qrCodeId)
         {
@@ -81,6 +92,7 @@ namespace RVMSService.Controllers
         }
 
         //get active QR codes by gate ID
+        [Authorize(Roles = "Admin")]
         [HttpGet("getActiveQRCodes/{gateId}")]
         public async Task<List<QrCodeModel>> GetActiveQRCodes(Guid gateId)
         {
@@ -99,6 +111,7 @@ namespace RVMSService.Controllers
         }
 
         //update QR code
+        [Authorize(Roles = "Admin")]
         [HttpPost("updateQRCode")]
         public async Task<IActionResult> UpdateQRCode([FromBody] QrCodeModel qRCode)
         {
