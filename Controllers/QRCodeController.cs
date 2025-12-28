@@ -66,27 +66,27 @@ namespace RVMSService.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("deleteQRCode/{qrCodeId}")]
-        public async Task<IActionResult> DeleteQRCode(Guid qrCodeId)
+        [HttpPost("deleteQRCode")]
+        public async Task<IActionResult> DeleteQRCode(DOTQRModel dotQR)
         {
             try
             {
-                _logger.LogInformation("DeleteQRCode called for ID: {qrCodeId}", qrCodeId);
-                var result = await _qRCodeService.deleteQrCode(qrCodeId);
+                _logger.LogInformation("DeleteQRCode called for ID: {qrCodeId}", dotQR.QrCode.QrId);
+                var result = await _qRCodeService.deleteQrCode(dotQR);
                 if (result)
                 {
-                    _logger.LogInformation("QR Code with ID: {qrCodeId} deleted successfully", qrCodeId);
+                    _logger.LogInformation("QR Code with ID: {qrCodeId} deleted successfully", dotQR.QrCode.QrId);
                     return Ok(new { message = "Delete QR Code Success" });
                 }
                 else
                 {
-                    _logger.LogWarning("QR Code with ID: {qrCodeId} not found", qrCodeId);
+                    _logger.LogWarning("QR Code with ID: {qrCodeId} not found", dotQR.QrCode.QrId);
                     return NotFound(new { message = "QR Code not found" });
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while deleting QR Code with ID: {qrCodeId}", qrCodeId);
+                _logger.LogError(ex, "Error occurred while deleting QR Code with ID: {qrCodeId}", dotQR.QrCode.QrId);
                 return StatusCode(500, new { message = "An error occurred while deleting the QR Code." });
             }
         }
@@ -113,18 +113,18 @@ namespace RVMSService.Controllers
         //update QR code
         [Authorize(Roles = "Admin")]
         [HttpPost("updateQRCode")]
-        public async Task<IActionResult> UpdateQRCode([FromBody] QrCodeModel qRCode)
+        public async Task<IActionResult> UpdateQRCode([FromBody] DOTQRModel dotQR)
         {
             try
             {
-                _logger.LogInformation("UpdateQRCode called for ID: {qrCodeId}", qRCode.QrId);
-                await _qRCodeService.UpdateQrCode(qRCode);
-                _logger.LogInformation("QR Code with ID: {qrCodeId} updated successfully", qRCode.QrId);
+                _logger.LogInformation("UpdateQRCode called for ID: {qrCodeId}", dotQR.QrCode.QrId);
+                await _qRCodeService.UpdateQrCode(dotQR);
+                _logger.LogInformation("QR Code with ID: {qrCodeId} updated successfully", dotQR.QrCode.QrId);
                 return Ok(new { message = "Update QR Code Success" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while updating QR Code with ID: {qrCodeId}", qRCode.QrId);
+                _logger.LogError(ex, "Error occurred while updating QR Code with ID: {qrCodeId}", dotQR.QrCode.QrId);
                 return StatusCode(500, new { message = "An error occurred while updating the QR Code." });
             }
         }

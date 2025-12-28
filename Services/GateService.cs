@@ -69,15 +69,15 @@ namespace RVMSService.Services
                 _logger.LogInformation("Fetched all gates, count: {Count}", gates.Count);
 
                 // Optionally record audit trail
-                var audit = new AuditTrailModel
-                {
-                    // UserId = /* get user id from context */,
-                    Description = "GetAllGates",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Success",
-                    Category = "Gate"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    // UserId = /* get user id from context */,
+                //    Description = "GetAllGates",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Success",
+                //    Category = "Gate"
+                //};
+                //await _auditTrail.RecordAsync(audit);
 
                 return gates;
             }
@@ -85,15 +85,15 @@ namespace RVMSService.Services
             {
                 _logger.LogError(ex, "Error occurred while fetching all gates");
 
-                var audit = new AuditTrailModel
-                {
-                    // UserId = /* get user id from context */,
-                    Description = "GetAllGates",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Failure",
-                    Category = "Gate"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    // UserId = /* get user id from context */,
+                //    Description = "GetAllGates",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Failure",
+                //    Category = "Gate"
+                //};
+                //await _auditTrail.RecordAsync(audit);
 
                 throw new Exception("An error occurred while fetching gates.", ex);
 
@@ -204,29 +204,29 @@ namespace RVMSService.Services
                 }
                 _logger.LogInformation("Fetched gate with ID: {GateId}", gateId);
                 // Optionally record audit trail
-                var audit = new AuditTrailModel
-                {
-                    // UserId = /* get user id from context */,
-                    Description = $"GetGateById {gateId}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Success",
-                    Category = "Gate"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    // UserId = /* get user id from context */,
+                //    Description = $"GetGateById {gateId}",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Success",
+                //    Category = "Gate"
+                //};
+                //await _auditTrail.RecordAsync(audit);
                 return gate;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while fetching gate with ID: {GateId}", gateId);
-                var audit = new AuditTrailModel
-                {
-                    // UserId = /* get user id from context */,
-                    Description = $"GetGateById {gateId}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Failure",
-                    Category = "Gate"
-                };
-                await _auditTrail.RecordAsync(audit);
+                //var audit = new AuditTrailModel
+                //{
+                //    // UserId = /* get user id from context */,
+                //    Description = $"GetGateById {gateId}",
+                //    Timestamp = DateTime.UtcNow,
+                //    Status = "Failure",
+                //    Category = "Gate"
+                //};
+                //await _auditTrail.RecordAsync(audit);
                 throw new Exception("An error occurred while fetching the gate.", ex);
             }
         }

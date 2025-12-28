@@ -101,22 +101,24 @@ namespace RVMSService.Services
             }
         }
 
-        public async Task UpdateQrCode(QrCodeModel qrCode)
+        public async Task UpdateQrCode(DOTQRModel dotQR)
         {
             try
             {
-                _logger.LogInformation($"Updating QR Code with ID: {qrCode.QrId}");
-                _context.QrCodes.Update(qrCode);
+                _logger.LogInformation($"Updating QR Code with ID: {dotQR.QrCode.QrId}");
+                _context.QrCodes.Update(dotQR.QrCode);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("QR Code updated successfully");
                 //record audit trail
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
-                    Description = $"Update QR Code {qrCode.QrString}",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Update QR Code {dotQR.QrCode.QrString}",
+                    Timestamp = DateTime.Now,
                     Status = "Success",
-                    Category = "QR Code"
+                    Category = "QR Code",
+                    Location = dotQR.AuditTrail.Location,
+                    UserName = dotQR.AuditTrail.UserName
                 };
                 await _auditTrail.RecordAsync(audit);
             }
@@ -125,8 +127,8 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = , /* get user id from context */
-                    Description = $"Update QR Code {qrCode.QrString} fail",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Update QR Code {dotQR.QrCode.QrString} fail",
+                    Timestamp = DateTime.Now,
                     Status = "Failure",
                     Category = "QR Code"
                 };
@@ -136,26 +138,29 @@ namespace RVMSService.Services
             }
         }
 
-        public async Task<bool> deleteQrCode(Guid qrCodeId)
+        public async Task<bool> deleteQrCode(DOTQRModel dotQR)
         {
             try
             {
-                _logger.LogInformation($"Deleting QR Code ID: {qrCodeId}");
-                var existingQrCode = await _context.QrCodes.FindAsync(qrCodeId);
+                _logger.LogInformation($"Deleting QR Code ID: {dotQR.QrCode.QrId}");
+                var existingQrCode = await _context.QrCodes.FindAsync(dotQR.QrCode.QrId);
                 if (existingQrCode == null)
                 {
-                    _logger.LogWarning($"Qr Code with ID: {qrCodeId} not found");
+                    _logger.LogWarning($"Qr Code with ID: {dotQR.QrCode.QrId} not found");
                     throw new Exception("QRCode not found");
                 }
                 _context.QrCodes.Remove(existingQrCode);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation($"QR Codes with ID: {qrCodeId} deleted successfully");
+                _logger.LogInformation($"QR Codes with ID: {dotQR.QrCode.QrId} deleted successfully");
                 //record audit trail
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
+                    UserName = dotQR.AuditTrail.UserName,
+                    UserId = dotQR.AuditTrail.UserId,
+                    Location = dotQR.AuditTrail.Location,
                     Description = $"Delete Qr Code {existingQrCode.QrString}.",
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTime.Now,
                     Status = "Success",
                     Category = "QR Code"
                 };
@@ -167,13 +172,17 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
-                    Description = $"Delete QR Codes {qrCodeId} fail.",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Delete QR Codes {dotQR.QrCode.QrId} fail.",
+                    Timestamp = DateTime.Now,
                     Status = "Failure",
-                    Category = "QR Code"
+                    Category = "QR Code",
+                    UserName = dotQR.AuditTrail.UserName,
+                    Location = dotQR.AuditTrail.Location,
+                    UserId = dotQR.AuditTrail.UserId
+
                 };
                 await _auditTrail.RecordAsync(audit);
-                _logger.LogError(ex, $"Error occurred while deleting QR Code with ID: {qrCodeId}");
+                _logger.LogError(ex, $"Error occurred while deleting QR Code with ID: {dotQR.QrCode.QrId}");
                 throw new Exception("An error occurred while deleting the QR Code.", ex);
             }
         }
