@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RVMSService.Data;
 using RVMSService.Models;
+using System.Runtime.CompilerServices;
 
 namespace RVMSService.Services
 {
@@ -184,6 +185,22 @@ namespace RVMSService.Services
                 await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, $"Error occurred while deleting QR Code with ID: {dotQR.QrCode.QrId}");
                 throw new Exception("An error occurred while deleting the QR Code.", ex);
+            }
+        }
+
+        public async Task<List<QrCodeModel>> GetQRCodesbyGateId(Guid gateId)
+        {
+            try
+            {
+                _logger.LogInformation($"Retrieving QR Codes for gate {gateId}");
+                var qrCodes = await _context.QrCodes.Where(q => ((q.Status == true) && (q.GateId == gateId))).ToListAsync();
+                _logger.LogInformation("Retrieved {Count} QR Codes", qrCodes.Count);
+                return qrCodes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving used QR Codes from database");
+                throw new Exception("An error occurred while retrieving the used QR Codes.", ex);
             }
         }
     }

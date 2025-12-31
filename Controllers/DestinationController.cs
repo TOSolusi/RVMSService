@@ -47,7 +47,7 @@ namespace RVMSService.Controllers
 
 
         //get all destination list
-        
+
         [HttpGet("getDestinations")]
         public async Task<List<DestinationModel>> GetDestinations()
         {
@@ -118,7 +118,7 @@ namespace RVMSService.Controllers
         {
             try
             {
-               _logger.LogInformation("UpdateDestination called for ID: {DestinationId}", destination.DestinationId);
+                _logger.LogInformation("UpdateDestination called for ID: {DestinationId}", destination.DestinationId);
                 await _destination.UpdateDestination(destination);
                 _logger.LogInformation("Destination with ID: {DestinationId} updated successfully", destination.DestinationId);
                 return true;
@@ -130,6 +130,24 @@ namespace RVMSService.Controllers
                 return false;
             }
 
+        }
+
+        [HttpGet("getDestinationsByGateID/{gateId}")]
+        public async Task<List<DestinationModel>> GetDestinationByGateID(Guid gateId)
+        {
+            try
+            {
+                _logger.LogInformation("GetDestinationByGateID called with Gate ID: {GateId}", gateId);
+                var destinations = await _destination.GetDestinationsByGateId(gateId);
+                _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count(), gateId);
+                return destinations;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) as needed
+                _logger.LogError(ex, "Error occurred while retrieving destinations by Gate ID");
+                return new List<DestinationModel>();
+            }
         }
     }
 }

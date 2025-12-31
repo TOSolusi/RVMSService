@@ -185,12 +185,13 @@ namespace RVMSService.Services
             try
             {
                 _logger.LogInformation("Retrieving destinations for Gate ID: {GateId}", gateId);
-                //var destinations = await _context.Destinations
-                //    .Where(d => (d.GateId == gateId) && (d.Status == true) )
-                //     .ToListAsync();
-                // _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count, gateId);
-                //return destinations;
-                return null;
+                var destinations = await _context.Destinations.Where(d => d.Gates != null && d.Gates.Contains(gateId.ToString()) && d.Status == true).ToListAsync();
+                _logger.LogInformation("Retrieved {Count} destinations for Gate ID: {GateId}", destinations.Count, gateId);
+
+              return destinations;
+
+
+                //return null;
             }
             catch (Exception ex)
             {
