@@ -92,14 +92,14 @@ namespace RVMSService.Controllers
         }
 
         //get active QR codes by gate ID
-        [Authorize(Roles = "Admin")]
+        
         [HttpGet("getActiveQRCodes/{gateId}")]
-        public async Task<List<QrCodeModel>> GetActiveQRCodes(Guid gateId)
+        public async Task<List<QrCodeModel>> GetQRCodesbyGateId(Guid gateId)
         {
             try
             {
                 _logger.LogInformation("GetActiveQRCodes called for Gate ID: {gateId}", gateId);
-                var qRCodes = await _qRCodeService.GetActiveQRCodes(gateId);
+                var qRCodes = await _qRCodeService.GetQRCodesbyGateId(gateId);
                 _logger.LogInformation("Retrieved {Count} active QR Codes for Gate ID: {gateId}", qRCodes.Count(), gateId);
                 return qRCodes;
             }
