@@ -22,7 +22,7 @@ namespace RVMSService.Models
    
     public class DOTQRModel
     {
-        public QrCodeModel QrCode { get; set; }
-        public AuditTrailModel AuditTrail { get; set; }
+        public QrCodeModel? QrCode { get; set; }
+        public AuditTrailModel? AuditTrail { get; set; }
     }
 }

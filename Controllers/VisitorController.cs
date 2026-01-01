@@ -23,21 +23,21 @@ namespace RVMSService.Controllers
         //Add Visitor   
         [HttpPost("addVisitor")]
 
-        public async Task<IActionResult> AddVisitor(VisitorModel visitor)
+        public async Task<IActionResult> AddVisitor(DOTVisitorModel dotVisitor)
         {
             try
             {
-                _logger.LogInformation("Add visitor with name : {Name}", visitor.VisitorName);
-                var isAdded = await _visitor.AddVisitorAsync(visitor);
+                _logger.LogInformation("Add visitor with name : {Name}", dotVisitor.Visitor.VisitorName);
+                var isAdded = await _visitor.AddVisitorAsync(dotVisitor);
                 if (isAdded)
                 {
-                    _logger.LogInformation("Visitor added with ID: {visitorId}", visitor.VisitorId);
-                    return Ok(new { message = "Add visitor Success", visitorId = visitor.VisitorId });
+                    _logger.LogInformation("Visitor added with ID: {visitorId}", dotVisitor.Visitor.VisitorId);
+                    return Ok(new { message = "Add visitor Success", visitorId = dotVisitor.Visitor.VisitorId });
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to add visitor with name: {Name}", visitor.VisitorName);
-                    return StatusCode(500, new { message = "Failed to add visitor." });
+                    _logger.LogError( "Error occurred while adding visitor");
+                    return StatusCode(500, new { message = "An error occurred while adding the visitor." });
                 }
             }
             catch (Exception ex)

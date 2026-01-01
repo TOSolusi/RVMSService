@@ -12,21 +12,53 @@ namespace RVMSService.Controllers
 
         private readonly ILogger<VisitController> _logger;
         private readonly IVisitService _visit;
+        private readonly IVisitorService _visitor;
+        private readonly IQRCodeService _qrCodeService;
 
-        public VisitController(ILogger<VisitController> logger, IVisitService visit)
+        public VisitController(ILogger<VisitController> logger, IVisitService visit,
+            IVisitorService visitorService, IQRCodeService qRCodeService)
         {
             _logger = logger;
             _visit = visit;
+            _visitor = visitorService;
+            _qrCodeService = qRCodeService;
         }
 
         //Add Visit
+        
         [HttpPost("addVisit")]
-        public async Task<IActionResult> AddVisit(VisitModel visit)
+        public async Task<IActionResult> AddVisit(DOTVisitModel dotVisit)
         {
             try
             {
+                var visit = dotVisit.visit;
+                var visitor = dotVisit.visitor;
+                var qrCode = dotVisit.qrCode;
+                var auditTrail = dotVisit.auditTrail;
+
+                DOTVisitorModel dotVisitor = new DOTVisitorModel
+                {
+                    Visitor = visitor,
+                    AuditTrail = auditTrail
+                };
+
+                DOTQRModel dotQR = new DOTQRModel
+                {
+                    QrCode  = qrCode,
+                    AuditTrail = auditTrail
+                };
+
+
+                _logger.LogInformation($"Add Visitor {visitor.VisitorId}, name : {visitor.VisitorName}");
+                var visitorAdded = await _visitor.AddVisitorAsync(dotVisitor);
+                if (!visitorAdded)
+                {
+                    _logger.LogWarning("Failed to add visitor with ID: {VisitorId}", visitor.VisitorId);
+                    return StatusCode(500, new { message = "Failed to add visitor." });
+                }
+               
                 _logger.LogInformation("Add visit for visitor ID : {VisitorId}", visit.VisitorId);
-                var isAdded = await _visit.AddVisitAsync(visit);
+                var isAdded = await _visit.AddVisitAsync(dotVisit);
                 if (isAdded)
                 {
                     _logger.LogInformation("Visit added with ID: {visitId}", visit.VisitId);
@@ -36,6 +68,14 @@ namespace RVMSService.Controllers
                 {
                     _logger.LogWarning("Failed to add visit for visitor ID: {VisitorId}", visit.VisitorId);
                     return StatusCode(500, new { message = "Failed to add visit." });
+                }
+
+                _logger.LogInformation("Set QR Code for visit ID : {VisitId}", visit.VisitId);
+                var qrCodeSet = await _qrCodeService.UpdateQrCode(dotQR);
+                if (!qrCodeSet)
+                {
+                    _logger.LogWarning("Failed to set QR code for visit ID: {VisitId}", visit.VisitId);
+                    return StatusCode(500, new { message = "Failed to set QR code." });
                 }
             }
             catch (Exception ex)

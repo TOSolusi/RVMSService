@@ -8,7 +8,7 @@ namespace RVMSService.Services
         Task<Guid?> AddQRCode(QrCodeModel qrCode, AuditTrailModel auditTrail);
         Task<List<QrCodeModel>> GetAllQRCodes();
         Task<List<QrCodeModel>> GetQRCodesbyGateId(Guid gateId);
-        Task UpdateQrCode(DOTQRModel dotQR);
+        Task<bool> UpdateQrCode(DOTQRModel dotQR);
         Task<bool> deleteQrCode(DOTQRModel dotQR);
 
 

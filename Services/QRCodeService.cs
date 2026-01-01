@@ -102,7 +102,7 @@ namespace RVMSService.Services
             }
         }
 
-        public async Task UpdateQrCode(DOTQRModel dotQR)
+        public async Task<bool> UpdateQrCode(DOTQRModel dotQR)
         {
             try
             {
@@ -122,6 +122,7 @@ namespace RVMSService.Services
                     UserName = dotQR.AuditTrail.UserName
                 };
                 await _auditTrail.RecordAsync(audit);
+                return true; // corrected from 'refturn' to 'return'
             }
             catch (Exception ex)
             {
@@ -136,8 +137,11 @@ namespace RVMSService.Services
                 await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while updating QR Code in database");
                 throw new Exception("An error occurred while updating the QR Code.", ex);
+
+                return false;
             }
-        }
+        }   
+
 
         public async Task<bool> deleteQrCode(DOTQRModel dotQR)
         {

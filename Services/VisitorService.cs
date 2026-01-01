@@ -17,25 +17,29 @@ namespace RVMSService.Services
             _auditTrail = auditTrail;
         }
 
-        public async Task<bool> AddVisitorAsync(VisitorModel visitor)
+        public async Task<bool> AddVisitorAsync(DOTVisitorModel dotVisitor)
         {
             try
             {
-                await _context.Visitors.AddAsync(visitor);
+                await _context.Visitors.AddAsync(dotVisitor.Visitor);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation($"Visitor added with ID: {visitor.VisitorId}. ");
+                _logger.LogInformation($"Visitor added with ID: {dotVisitor.Visitor.VisitorId}. ");
 
                 // Record audit trail
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
-                    Description = $"Add Visitor {visitor.VisitorId}",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Add Visitor {dotVisitor.Visitor.VisitorName}",
+                    Timestamp = DateTime.Now,
                     Status = "Success",
-                    Category = "Visitor"
+                    Category = "Visitor",
+                    UserName = dotVisitor.AuditTrail?.UserName,
+                    Location = dotVisitor.AuditTrail?.Location
                 };
                 await _auditTrail.RecordAsync(audit);
 
+
+                _logger.LogInformation($"Successfully added visitor: {dotVisitor.Visitor.VisitorName}");
 
                 return true;
             }
@@ -46,8 +50,8 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = , /* get user id from context */
-                    Description = $"Add visitor {visitor.VisitorName} fail",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Add visitor {dotVisitor.Visitor.VisitorName} fail",
+                    Timestamp = DateTime.Now,
                     Status = "Failure",
                     Category = "Visitor"
                 };

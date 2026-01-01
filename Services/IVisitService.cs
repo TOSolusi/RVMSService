@@ -4,7 +4,7 @@ namespace RVMSService.Services
 {
     public interface IVisitService
     {
-        Task<bool> AddVisitAsync(VisitModel visit);
+        Task<bool> AddVisitAsync(DOTVisitModel dotVisit);
         Task<List<VisitModel>> GetLastSignedInVisitsWithoutPhotosToday(int count);
         Task<VisitModel?> GetVisitByIdAsync(Guid visitId);
         Task<VisitModel?> GetVisitPhotos(Guid visitId);

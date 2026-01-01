@@ -18,10 +18,13 @@ namespace RVMSService.Services
 
         }
 
-        public async Task<bool> AddVisitAsync(VisitModel visit)
+        public async Task<bool> AddVisitAsync(DOTVisitModel dotVisit)
         {
             try
             {
+                var visit = dotVisit.visit;
+                var auditTrail = dotVisit.auditTrail;
+
                 await _context.Visits.AddAsync(visit);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Visit added with ID: {visit.VisitId}. ");
@@ -29,10 +32,12 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = /* get user id from context */
-                    Description = $"Add Visit {visit.VisitId}",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Add Visit {dotVisit.visit.VisitId}",
+                    Timestamp = DateTime.Now,
                     Status = "Success",
-                    Category = "Visit"
+                    Category = "Visit",
+                    UserName = auditTrail?.UserName,
+                    Location = auditTrail?.Location
                 };
                 await _auditTrail.RecordAsync(audit);
                 return true;
@@ -44,10 +49,12 @@ namespace RVMSService.Services
                 var audit = new AuditTrailModel
                 {
                     //UserId = , /* get user id from context */
-                    Description = $"Add visit {visit.VisitId} fail",
-                    Timestamp = DateTime.UtcNow,
+                    Description = $"Add visit  fail",
+                    Timestamp = DateTime.Now,
                     Status = "Failure",
-                    Category = "Visit"
+                    Category = "Visit",
+                    UserName = dotVisit.auditTrail?.UserName,
+                    Location = dotVisit.auditTrail?.Location
                 };
                 await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while adding visit to database");
