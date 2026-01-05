@@ -59,24 +59,28 @@ namespace RVMSService.Controllers
                
                 _logger.LogInformation("Add visit for visitor ID : {VisitorId}", visit.VisitorId);
                 var isAdded = await _visit.AddVisitAsync(dotVisit);
-                if (isAdded)
-                {
-                    _logger.LogInformation("Visit added with ID: {visitId}", visit.VisitId);
-                    return Ok(new { message = "Add visit Success", visitId = visit.VisitId });
-                }
-                else
+                if (!isAdded)
                 {
                     _logger.LogWarning("Failed to add visit for visitor ID: {VisitorId}", visit.VisitorId);
                     return StatusCode(500, new { message = "Failed to add visit." });
+                    
                 }
-
+              
+                _logger.LogInformation("Visit added with ID: {visitId}", visit.VisitId);
+                //return Ok(new { message = "Add visit Success", visitId = visit.VisitId });
                 _logger.LogInformation("Set QR Code for visit ID : {VisitId}", visit.VisitId);
+                dotQR.QrCode.Used = true;
+                dotQR.QrCode.VisitId = visit.VisitId;
+                dotQR.QrCode.LastUsed = DateTime.Now;
+
                 var qrCodeSet = await _qrCodeService.UpdateQrCode(dotQR);
                 if (!qrCodeSet)
                 {
                     _logger.LogWarning("Failed to set QR code for visit ID: {VisitId}", visit.VisitId);
                     return StatusCode(500, new { message = "Failed to set QR code." });
                 }
+
+                return Ok(new { message = "Add visit Success", visitId = visit.VisitId });
             }
             catch (Exception ex)
             {

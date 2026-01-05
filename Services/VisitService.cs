@@ -25,6 +25,8 @@ namespace RVMSService.Services
                 var visit = dotVisit.visit;
                 var auditTrail = dotVisit.auditTrail;
 
+                //visit.VisitId = Guid.NewGuid();
+
                 await _context.Visits.AddAsync(visit);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Visit added with ID: {visit.VisitId}. ");

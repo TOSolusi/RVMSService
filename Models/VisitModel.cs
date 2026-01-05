@@ -16,13 +16,14 @@ namespace RVMSService.Models
         public DateTime? CheckOut { get; set; }
 
         public string? CurrentPhotoFile { get; set; }
-        public byte[] CurrentPhoto { get; set; }
+        public byte[]? CurrentPhoto { get; set; }
+        public string? VehicleNumber { get; set; }
         public string? VehiclePhotoFile { get; set; }
 
-        public byte[] VehiclePhoto { get; set; }
+        public byte[]? VehiclePhoto { get; set; }
         public string? AdditionalPhotoFile { get; set; }
-        public byte[] AdditionalPhoto { get; set; }
-        public bool Status { get; set; }
+        public byte[]? AdditionalPhoto { get; set; }
+        public bool? Status { get; set; }
 
     }
 }

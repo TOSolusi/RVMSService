@@ -207,5 +207,7 @@ namespace RVMSService.Services
                 throw new Exception("An error occurred while retrieving the used QR Codes.", ex);
             }
         }
+
+        
     }
 }

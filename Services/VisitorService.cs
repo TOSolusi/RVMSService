@@ -21,6 +21,8 @@ namespace RVMSService.Services
         {
             try
             {
+                //dotVisitor.Visitor.VisitorId = Guid.NewGuid();
+
                 await _context.Visitors.AddAsync(dotVisitor.Visitor);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Visitor added with ID: {dotVisitor.Visitor.VisitorId}. ");

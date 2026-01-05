@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RVMSService.Data;
 
@@ -11,9 +12,11 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260105143207_vehiclenumberfieldadded")]
+    partial class vehiclenumberfieldadded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,6 +369,7 @@ namespace RVMSService.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("AdditionalPhoto")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("AdditionalPhotoFile")
@@ -378,6 +382,7 @@ namespace RVMSService.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<byte[]>("CurrentPhoto")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("CurrentPhotoFile")
@@ -392,7 +397,7 @@ namespace RVMSService.Migrations
                     b.Property<Guid>("QrId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool?>("Status")
+                    b.Property<bool>("Status")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("TypeId")
@@ -405,6 +410,7 @@ namespace RVMSService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("VehiclePhoto")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("VehiclePhotoFile")
