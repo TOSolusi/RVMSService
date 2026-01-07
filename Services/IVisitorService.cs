@@ -10,5 +10,6 @@ namespace RVMSService.Services
         Task<List<VisitorModel>> GetAllVisitorsInfoOnlyAsync();
         Task<VisitorModel?> GetVisitorPictureByIdAsync(Guid visitorId);
         Task<bool> UpdateVisitor(VisitorModel visitor);
+        Task<VisitorModel?> GetVisitorByIdAsync(Guid visitorId);
     }
 }

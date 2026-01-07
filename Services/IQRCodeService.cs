@@ -10,6 +10,7 @@ namespace RVMSService.Services
         Task<List<QrCodeModel>> GetQRCodesbyGateId(Guid gateId);
         Task<bool> UpdateQrCode(DOTQRModel dotQR);
         Task<bool> deleteQrCode(DOTQRModel dotQR);
+        Task<QrCodeModel?> GetQRCodeById(Guid qrId);
 
 
     }

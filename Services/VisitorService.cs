@@ -223,6 +223,20 @@ namespace RVMSService.Services
                 throw new Exception("An error occurred while retrieving blacklisted visitors.", ex);
             }
         }
+
+        public async Task<VisitorModel?> GetVisitorByIdAsync(Guid visitorId)
+        {
+            try
+            {
+                var visitor = await _context.Visitors.FindAsync(visitorId);
+                return visitor;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving visitor by ID");
+                throw new Exception("An error occurred while retrieving the visitor.", ex);
+            }
+        }
     }
 }
  

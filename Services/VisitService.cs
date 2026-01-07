@@ -9,12 +9,15 @@ namespace RVMSService.Services
         private readonly AppDBContext _context;
         private readonly ILogger<VisitService> _logger;
         private readonly IAuditTrailService _auditTrail;
+        private readonly IVisitorService _visitorService;
 
-        public VisitService(AppDBContext context, ILogger<VisitService> logger, IAuditTrailService auditTrail)
+        public VisitService(AppDBContext context, ILogger<VisitService> logger,
+            IAuditTrailService auditTrail, IVisitorService visitorService)
         {
             _context = context;
             _logger = logger;
             _auditTrail = auditTrail;
+            _visitorService = visitorService;
 
         }
 
@@ -23,6 +26,8 @@ namespace RVMSService.Services
             try
             {
                 var visit = dotVisit.visit;
+                //var visitor = dotVisit.visitor;
+
                 var auditTrail = dotVisit.auditTrail;
 
                 //visit.VisitId = Guid.NewGuid();
@@ -199,7 +204,31 @@ namespace RVMSService.Services
                     // Exclude photo fields
                 })
                 .ToListAsync();
+
         }
 
+        public async Task<List<VisitModel>> GetVisitswithoutPhotosByDateRangeByGate(DateTime startDate, DateTime endDate, Guid gateId)
+        {
+            return await _context.Visits
+                .Where(v => v.CheckIn.Date >= startDate.Date && v.CheckIn.Date <= endDate.Date && v.GateId == gateId)
+                .Select(v => new VisitModel
+                {
+                    VisitId = v.VisitId,
+                    VisitorId = v.VisitorId,
+                    TypeId = v.TypeId,
+                    GateId = v.GateId,
+                    QrId = v.QrId,
+                    DestinationId = v.DestinationId,
+                    UserId = v.UserId,
+                    CheckIn = v.CheckIn,
+                    CheckOut = v.CheckOut,
+                    Status = v.Status
+                    // Exclude photo fields
+                })
+                .ToListAsync();
+        }
+
+       
     }
 }
+

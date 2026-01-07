@@ -11,5 +11,6 @@ namespace RVMSService.Services
         Task<List<VisitModel>> GetVisitswithoutPhotosByDateRange(DateTime startDate, DateTime endDate);
         Task<bool> UpdateVisitAsync(VisitModel visit);
         Task<bool> updateVisitSignOut(Guid visitId);
+        Task<List<VisitModel>> GetVisitswithoutPhotosByDateRangeByGate(DateTime startDate, DateTime endDate, Guid gateId);
     }
 }

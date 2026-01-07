@@ -208,6 +208,23 @@ namespace RVMSService.Services
             }
         }
 
-        
+        public async Task<QrCodeModel?> GetQRCodeById(Guid qrId)
+        {
+            try
+            {
+                _logger.LogInformation("GetQRCodeById called for QrId: {QrId}", qrId);
+                var qrCode = await _context.QrCodes.FindAsync(qrId);
+                if (qrCode == null)
+                {
+                    _logger.LogWarning("QR Code not found for QrId: {QrId}", qrId);
+                }
+                return qrCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving QR Code with QrId: {QrId}", qrId);
+                throw new Exception("An error occurred while retrieving the QR Code.", ex);
+            }
+        }
     }
 }

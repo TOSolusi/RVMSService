@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RVMSService.Models;
 using RVMSService.Services;
+using System.Runtime.CompilerServices;
 
 namespace RVMSService.Controllers
 {
@@ -14,14 +16,19 @@ namespace RVMSService.Controllers
         private readonly IVisitService _visit;
         private readonly IVisitorService _visitor;
         private readonly IQRCodeService _qrCodeService;
+        private readonly IDestinationService _destinationService;
+        private readonly IVisitTypeService _visitTypeService;
 
         public VisitController(ILogger<VisitController> logger, IVisitService visit,
-            IVisitorService visitorService, IQRCodeService qRCodeService)
+            IVisitorService visitorService, IQRCodeService qRCodeService,
+            IDestinationService destinationService, IVisitTypeService visitTypeService)
         {
             _logger = logger;
             _visit = visit;
             _visitor = visitorService;
             _qrCodeService = qRCodeService;
+            _destinationService = destinationService;
+            _visitTypeService = visitTypeService;
         }
 
         //Add Visit
@@ -236,7 +243,65 @@ namespace RVMSService.Controllers
             }
         }
 
+        //get visits without photos by date range
+        [HttpGet("getVisitswithoutPhotosByDateRangeByGateId")]
+        public async Task<IActionResult> GetVisitswithoutPhotosByDateRangeByGateId([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid gateId)
+        {
+            try
+            {
+                _logger.LogInformation("Get visits without photos by date range : {StartDate} - {EndDate} for Gate ID: {GateId}", startDate, endDate, gateId);
+                var visits = await _visit.GetVisitswithoutPhotosByDateRangeByGate(startDate, endDate, gateId);
+                _logger.LogInformation("Retrieved {VisitCount} visits", visits.Count);
+                return Ok(visits);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) as needed
+                _logger.LogError(ex, "Error occurred while retrieving visits by date range");
+                return StatusCode(500, new { message = "An error occurred while retrieving the visits." });
+            }
+        }
 
+        //get visits which return DOTVisitModel
+        [Authorize(Roles = "Admin, Operator, Security")]
+        [HttpGet("getDOTVisitByDateRangeByGateId")]
+        public async Task<List<DOTVisitReturnModel>> GetDOTVisitByDateRangeByGateId([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid gateId)
+        {
+            
+            _logger.LogInformation("Get DOT visits by date range : {StartDate} - {EndDate} for Gate ID: {GateId}", startDate, endDate, gateId);
+            var visits = await _visit.GetVisitswithoutPhotosByDateRangeByGate(startDate, endDate, gateId);
+            List<DOTVisitReturnModel> dotVisits = new List<DOTVisitReturnModel>();
+            
+            foreach (var visit in visits)
+            {
+                var dotVisit = new DOTVisitReturnModel();
+                visit.AdditionalPhoto = null;
+                visit.CurrentPhoto = null;
+                visit.VehiclePhoto = null;
+                
+                dotVisit.visit = visit;
+
+                VisitorModel visitor = await _visitor.GetVisitorByIdAsync(visit.VisitorId);
+                visitor.VisitorImage = null;
+
+                dotVisit.visitor = visitor;
+
+                QrCodeModel qrCode = await _qrCodeService.GetQRCodeById(visit.QrId);
+                dotVisit.qrCode = qrCode;
+
+                DestinationModel destination = await _destinationService.GetDestinationById(visit.DestinationId);
+                dotVisit.destination = destination;
+
+                VisitTypeModel visitType = await _visitTypeService.GetVisitTypebyID(visit.TypeId);
+                dotVisit.visitType = visitType;
+
+                dotVisits.Add(dotVisit);
+
+
+            }
+            _logger.LogInformation("Retrieved {VisitCount} DOT visits", dotVisits.Count);
+            return dotVisits;
+        }
 
         //public IActionResult Index()
         //{

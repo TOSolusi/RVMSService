@@ -222,5 +222,28 @@ namespace RVMSService.Services
                 throw new Exception("An error occurred while setting the Visit Type as default.", ex);
             }
         }
+
+        public async Task<VisitTypeModel?> GetVisitTypebyID(Guid visitTypeID)
+        {
+                       try
+            {
+                _logger.LogInformation($"Retrieving Visit Type with ID: {visitTypeID}");
+                var visitType = await _context.VisitTypes.FindAsync(visitTypeID);
+                if (visitType != null)
+                {
+                    _logger.LogInformation($"Visit Type with ID: {visitTypeID} retrieved successfully");
+                }
+                else
+                {
+                    _logger.LogWarning($"Visit Type with ID: {visitTypeID} not found");
+                }
+                return visitType;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while retrieving Visit Type with ID: {visitTypeID}");
+                throw new Exception("An error occurred while retrieving the Visit Type.", ex);
+            }
+        }
     }
 }
