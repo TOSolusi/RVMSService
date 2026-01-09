@@ -119,18 +119,20 @@ namespace RVMSService.Services
                 {
                     return false;
                 }
-                visit.CheckOut = DateTime.UtcNow;
+                visit.CheckOut = DateTime.Now;
                 _context.Visits.Update(visit);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Visit signed out with ID: {visit.VisitId}. ");
-                var audit = new AuditTrailModel
-                {
-                    //UserId = /* get user id from context */
-                    Description = $"Sign out Visit {visit.VisitId}",
-                    Timestamp = DateTime.UtcNow,
-                    Status = "Success",
-                    Category = "Visit"
-                };
+
+                //var audit = new AuditTrailModel
+                //{
+                //    //UserId = /* get user id from context */
+                //    Description = $"Sign out Visit {visit.VisitId}",
+                //    Timestamp = DateTime.Now,
+                //    Status = "Success",
+                //    Category = "Visit",
+                    
+                //};
                 return true;
             }
             catch (Exception ex)

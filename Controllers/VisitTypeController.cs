@@ -39,7 +39,7 @@ namespace RVMSService.Controllers
         }
 
         //get all visit type list
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Operator, Security")]
         [HttpGet("getVisitTypes")]
         public async Task<List<VisitTypeModel>> GetVisitTypes()
         {
@@ -103,7 +103,7 @@ namespace RVMSService.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Operator, Security")]
         [Route("getActiveVisitTypes")]
         public async Task<List<VisitTypeModel>> GetActiveVisitTypes()
         {

@@ -18,10 +18,12 @@ namespace RVMSService.Controllers
         private readonly IQRCodeService _qrCodeService;
         private readonly IDestinationService _destinationService;
         private readonly IVisitTypeService _visitTypeService;
+        private readonly IAuditTrailService _auditTrail;
 
         public VisitController(ILogger<VisitController> logger, IVisitService visit,
             IVisitorService visitorService, IQRCodeService qRCodeService,
-            IDestinationService destinationService, IVisitTypeService visitTypeService)
+            IDestinationService destinationService, IVisitTypeService visitTypeService,
+            IAuditTrailService auditTrail)
         {
             _logger = logger;
             _visit = visit;
@@ -29,6 +31,7 @@ namespace RVMSService.Controllers
             _qrCodeService = qRCodeService;
             _destinationService = destinationService;
             _visitTypeService = visitTypeService;
+            _auditTrail = auditTrail;
         }
 
         //Add Visit
@@ -281,18 +284,18 @@ namespace RVMSService.Controllers
                 
                 dotVisit.visit = visit;
 
-                VisitorModel visitor = await _visitor.GetVisitorByIdAsync(visit.VisitorId);
+                VisitorModel visitor = await _visitor.GetVisitorByIdAsync((Guid)visit.VisitorId);
                 visitor.VisitorImage = null;
 
                 dotVisit.visitor = visitor;
 
-                QrCodeModel qrCode = await _qrCodeService.GetQRCodeById(visit.QrId);
+                QrCodeModel qrCode = await _qrCodeService.GetQRCodeById((Guid)visit.QrId);
                 dotVisit.qrCode = qrCode;
 
-                DestinationModel destination = await _destinationService.GetDestinationById(visit.DestinationId);
+                DestinationModel destination = await _destinationService.GetDestinationById((Guid)visit.DestinationId);
                 dotVisit.destination = destination;
 
-                VisitTypeModel visitType = await _visitTypeService.GetVisitTypebyID(visit.TypeId);
+                VisitTypeModel visitType = await _visitTypeService.GetVisitTypebyID((Guid)visit.TypeId);
                 dotVisit.visitType = visitType;
 
                 dotVisits.Add(dotVisit);
@@ -301,6 +304,74 @@ namespace RVMSService.Controllers
             }
             _logger.LogInformation("Retrieved {VisitCount} DOT visits", dotVisits.Count);
             return dotVisits;
+        }
+
+        [Authorize(Roles = "Admin, Operator, Security")]
+        [HttpPost("SignOutVisit")]
+        public async Task<bool> SignOutVisit(DOTVisitModel dotVisit)
+        {
+            try
+            {
+                _logger.LogInformation("Sign out visit with ID : {VisitId}", dotVisit.visit.VisitId);
+
+                //dotVisit.visit.CheckOut = DateTime.Now;
+
+                VisitModel visitResult = await _visit.GetVisitByIdAsync((Guid)dotVisit.visit.VisitId);
+                visitResult.CheckOut = DateTime.Now;
+                
+
+                var isSignedOut = await _visit.UpdateVisitAsync(visitResult);
+                if (isSignedOut)
+                {
+                    _logger.LogInformation("Visit signed out with ID: {visitId}", dotVisit.visit.VisitId);
+
+                    //return true;
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to sign out visit with ID: {VisitId}", dotVisit.visit.VisitId);
+                    throw new Exception("Failed to sign out visit.");
+                }
+
+                var qrCode = await _qrCodeService.GetQRCodeById((Guid)dotVisit.visit.QrId);
+                qrCode.Used = false;
+                qrCode.LastUsed = DateTime.Now;
+                qrCode.VisitId = null;
+                var isQRsignout = await _qrCodeService.UpdateQrCode(new DOTQRModel
+                {
+                    QrCode = qrCode,
+                    AuditTrail = dotVisit.auditTrail
+                });
+                if (isQRsignout)
+                {
+                    _logger.LogInformation("QR Code released for visit ID: {visitId}", (Guid)dotVisit.visit.VisitId);
+                    //return true;
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to release QR code for visit ID: {VisitId}", dotVisit.visit.VisitId);
+                    throw new Exception("Failed to release QR code.");
+                }
+
+                var audit = dotVisit.auditTrail;
+                audit.Description = $"Sign out Visit {dotVisit.visit.VisitId}";
+                audit.Timestamp = DateTime.Now;
+                audit.Status = "Success";
+                audit.Category = "Visit";
+
+                await _auditTrail.RecordAsync(audit);
+                return true;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) as needed
+                _logger.LogError(ex, "Error occurred while signing out visit");
+
+                throw new Exception("An error occurred while signing out the visit.", ex);
+            }
         }
 
         //public IActionResult Index()

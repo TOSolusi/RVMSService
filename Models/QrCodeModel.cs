@@ -7,7 +7,7 @@ namespace RVMSService.Models
     {
         [Key]
         public Guid QrId { get; set; }
-        public string QrString { get; set; }
+        public string? QrString { get; set; }
         public string? Notes { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastUsed { get; set; }
