@@ -374,6 +374,47 @@ namespace RVMSService.Controllers
             }
         }
 
+        //get visits which return DOTVisitModel for admin
+        [Authorize(Roles = "Admin")]
+        [HttpGet("getDOTVisitsByDateRange")]
+        public async Task<List<DOTVisitReturnModel>> GetDOTVisitByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+
+            _logger.LogInformation("Get DOT visits by date range : {StartDate} - {EndDate}", startDate, endDate);
+            var visits = await _visit.GetVisitswithoutPhotosByDateRange(startDate, endDate);
+            List<DOTVisitReturnModel> dotVisits = new List<DOTVisitReturnModel>();
+
+            foreach (var visit in visits)
+            {
+                var dotVisit = new DOTVisitReturnModel();
+                visit.AdditionalPhoto = null;
+                visit.CurrentPhoto = null;
+                visit.VehiclePhoto = null;
+
+                dotVisit.visit = visit;
+
+                VisitorModel visitor = await _visitor.GetVisitorByIdAsync((Guid)visit.VisitorId);
+                visitor.VisitorImage = null;
+
+                dotVisit.visitor = visitor;
+
+                QrCodeModel qrCode = await _qrCodeService.GetQRCodeById((Guid)visit.QrId);
+                dotVisit.qrCode = qrCode;
+
+                DestinationModel destination = await _destinationService.GetDestinationById((Guid)visit.DestinationId);
+                dotVisit.destination = destination;
+
+                VisitTypeModel visitType = await _visitTypeService.GetVisitTypebyID((Guid)visit.TypeId);
+                dotVisit.visitType = visitType;
+
+                dotVisits.Add(dotVisit);
+
+
+            }
+            _logger.LogInformation("Retrieved {VisitCount} DOT visits", dotVisits.Count);
+            return dotVisits;
+        }
+
         //public IActionResult Index()
         //{
         //    return View();
