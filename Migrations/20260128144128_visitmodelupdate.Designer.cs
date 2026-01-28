@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RVMSService.Data;
 
@@ -11,9 +12,11 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260128144128_visitmodelupdate")]
+    partial class visitmodelupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,6 +363,72 @@ namespace RVMSService.Migrations
                     b.Property<Guid?>("VisitId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Camera10Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera10Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera1Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera1Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera2Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera2Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera3Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera3Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera4Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera4Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera5Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera5Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera6Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera6Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera7Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera7Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera8Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera8Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera9Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera9Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("CameraIdImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CameraIdName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CheckIn")
                         .HasColumnType("datetime2");

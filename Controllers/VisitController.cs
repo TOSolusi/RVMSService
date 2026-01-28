@@ -278,9 +278,9 @@ namespace RVMSService.Controllers
             foreach (var visit in visits)
             {
                 var dotVisit = new DOTVisitReturnModel();
-                visit.AdditionalPhoto = null;
-                visit.CurrentPhoto = null;
-                visit.VehiclePhoto = null;
+                //visit.AdditionalPhoto = null;
+                //visit.CurrentPhoto = null;
+                //visit.VehiclePhoto = null;
                 
                 dotVisit.visit = visit;
 
@@ -387,9 +387,9 @@ namespace RVMSService.Controllers
             foreach (var visit in visits)
             {
                 var dotVisit = new DOTVisitReturnModel();
-                visit.AdditionalPhoto = null;
-                visit.CurrentPhoto = null;
-                visit.VehiclePhoto = null;
+                //visit.AdditionalPhoto = null;
+                //visit.CurrentPhoto = null;
+                //visit.VehiclePhoto = null;
 
                 dotVisit.visit = visit;
 

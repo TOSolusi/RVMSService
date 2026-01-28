@@ -180,9 +180,9 @@ namespace RVMSService.Services
                 .Select(v => new VisitModel
                 {
                     VisitId = v.VisitId,
-                    CurrentPhoto = v.CurrentPhoto,
-                    VehiclePhoto = v.VehiclePhoto,
-                    AdditionalPhoto = v.AdditionalPhoto
+                    //CurrentPhoto = v.CurrentPhoto,
+                    //VehiclePhoto = v.VehiclePhoto,
+                    //AdditionalPhoto = v.AdditionalPhoto
                 })
                 .FirstOrDefaultAsync();
         }

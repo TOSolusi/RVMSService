@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RVMSService.Models
 {
@@ -15,14 +16,32 @@ namespace RVMSService.Models
         public DateTime CheckIn { get; set; }
         public DateTime? CheckOut { get; set; }
 
-        public string? CurrentPhotoFile { get; set; }
-        public byte[]? CurrentPhoto { get; set; }
-        public string? VehicleNumber { get; set; }
-        public string? VehiclePhotoFile { get; set; }
+        [NotMapped]
+        public List<CapturedImageDataModel>? CapturedPhotos { get; set; } = new();
+        //public string? CameraIdName { get; set; }
+        //public byte[]? CameraIdImage { get; set; }
+        //public string? Camera1Name { get; set; }
+        //public byte[]? Camera1Image { get; set; }
 
-        public byte[]? VehiclePhoto { get; set; }
-        public string? AdditionalPhotoFile { get; set; }
-        public byte[]? AdditionalPhoto { get; set; }
+        //public string? Camera2Name { get; set; }
+        //public byte[]? Camera2Image { get; set; }
+        //public string? Camera3Name { get; set; }
+        //public byte[]? Camera3Image { get; set; }
+        //public string? Camera4Name { get; set; }
+        //public byte[]? Camera4Image { get; set; }
+        //public string? Camera5Name { get; set; }
+        //public byte[]? Camera5Image { get; set; }
+        //public string? Camera6Name { get; set; }
+        //public byte[]? Camera6Image { get; set; }
+        //public string? Camera7Name { get; set; }
+        //public byte[]? Camera7Image { get; set; }
+        //public string? Camera8Name { get; set; }
+        //public byte[]? Camera8Image { get; set; }
+        //public string? Camera9Name { get; set; }
+        //public byte[]? Camera9Image { get; set; }
+        //public string? Camera10Name { get; set; }
+        //public byte[]? Camera10Image { get; set; }
+
         public bool? Status { get; set; }
 
     }
