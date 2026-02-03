@@ -10,7 +10,7 @@ namespace RVMSService.Models
         public string? VisitorName { get; set; }
         public string? VisitorPhone { get; set; }
         public DateTime? LastVisit { get; set; }
-        public string? VisitorImageFile { get; set; }
+        public string? VisitorImageName { get; set; }
         public byte[]? VisitorImage { get; set; }
         public bool? Blacklist { get; set; }
     }

@@ -229,6 +229,7 @@ namespace RVMSService.Services
             try
             {
                 var visitor = await _context.Visitors.FindAsync(visitorId);
+
                 return visitor;
             }
             catch (Exception ex)

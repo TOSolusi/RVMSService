@@ -224,7 +224,18 @@ namespace RVMSService.Services
                     UserId = v.UserId,
                     CheckIn = v.CheckIn,
                     CheckOut = v.CheckOut,
-                    Status = v.Status
+                    Status = v.Status,
+                    Camera1Name = v.Camera1Name,
+
+                    Camera2Name = v.Camera2Name,
+                    Camera3Name = v.Camera3Name,
+                    Camera4Name = v.Camera4Name,
+                    Camera5Name = v.Camera5Name,
+                    Camera6Name = v.Camera6Name,
+                    Camera7Name = v.Camera7Name,
+                    Camera8Name = v.Camera8Name,
+                    Camera9Name = v.Camera9Name,
+                    Camera10Name = v.Camera10Name
                     // Exclude photo fields
                 })
                 .ToListAsync();

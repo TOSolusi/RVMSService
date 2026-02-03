@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RVMSService.Data;
 
@@ -11,9 +12,11 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260201123508_updatevisitmodel")]
+    partial class updatevisitmodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,6 +261,37 @@ namespace RVMSService.Migrations
                     b.ToTable("AuditTrails");
                 });
 
+            modelBuilder.Entity("RVMSService.Models.CapturedImageDataModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CameraName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CameraType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CapturedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("ImageData")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<Guid?>("VisitModelVisitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VisitModelVisitId");
+
+                    b.ToTable("CapturedImageDataModel");
+                });
+
             modelBuilder.Entity("RVMSService.Models.DestinationModel", b =>
                 {
                     b.Property<Guid>("DestinationId")
@@ -361,66 +395,6 @@ namespace RVMSService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte[]>("Camera10Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera10Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera1Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera1Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera2Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera2Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera3Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera3Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera4Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera4Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera5Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera5Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera6Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera6Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera7Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera7Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera8Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera8Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Camera9Image")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Camera9Name")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CheckIn")
                         .HasColumnType("datetime2");
 
@@ -500,7 +474,7 @@ namespace RVMSService.Migrations
                     b.Property<byte[]>("VisitorImage")
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<string>("VisitorImageName")
+                    b.Property<string>("VisitorImageFile")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VisitorName")
@@ -563,6 +537,18 @@ namespace RVMSService.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RVMSService.Models.CapturedImageDataModel", b =>
+                {
+                    b.HasOne("RVMSService.Models.VisitModel", null)
+                        .WithMany("CapturedPhotos")
+                        .HasForeignKey("VisitModelVisitId");
+                });
+
+            modelBuilder.Entity("RVMSService.Models.VisitModel", b =>
+                {
+                    b.Navigation("CapturedPhotos");
                 });
 #pragma warning restore 612, 618
         }

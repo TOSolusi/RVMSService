@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RVMSService.Data;
 
@@ -11,9 +12,11 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260201144209_updatevisitmodel5")]
+    partial class updatevisitmodel5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -419,6 +422,12 @@ namespace RVMSService.Migrations
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Camera9Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("CameraIdImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CameraIdName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CheckIn")

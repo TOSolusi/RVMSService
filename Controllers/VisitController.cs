@@ -391,6 +391,19 @@ namespace RVMSService.Controllers
                 //visit.CurrentPhoto = null;
                 //visit.VehiclePhoto = null;
 
+                //if (visit.CapturedPhotos != null && visit.CapturedPhotos.Any())
+                //{
+                //    visit.CapturedPhotosInfo = visit.CapturedPhotos.Select(p => new CapturedPhotosInfoModel
+                //    {
+                //        CameraName = p.CameraName,
+                //        CapturedAt = p.CapturedAt,
+                //        CameraType = p.CameraType,
+                //        ImageSize = p.ImageData?.Length ?? 0
+                //    }).ToList();
+
+                //    visit.CapturedPhotos = null; // Clear to prevent serialization
+                //}
+
                 dotVisit.visit = visit;
 
                 VisitorModel visitor = await _visitor.GetVisitorByIdAsync((Guid)visit.VisitorId);
@@ -406,6 +419,8 @@ namespace RVMSService.Controllers
 
                 VisitTypeModel visitType = await _visitTypeService.GetVisitTypebyID((Guid)visit.TypeId);
                 dotVisit.visitType = visitType;
+
+
 
                 dotVisits.Add(dotVisit);
 
