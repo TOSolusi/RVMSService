@@ -190,7 +190,7 @@ namespace RVMSService.Services
         public async Task<List<VisitModel>> GetVisitswithoutPhotosByDateRange(DateTime startDate, DateTime endDate)
         {
             return await _context.Visits
-                .Where(v => v.CheckIn.Date >= startDate.Date && v.CheckIn.Date <= endDate.Date)
+                .Where(v => v.CheckIn >= startDate && v.CheckIn <= endDate)
                 .Select(v => new VisitModel
                 {
                     VisitId = v.VisitId,
@@ -212,7 +212,7 @@ namespace RVMSService.Services
         public async Task<List<VisitModel>> GetVisitswithoutPhotosByDateRangeByGate(DateTime startDate, DateTime endDate, Guid gateId)
         {
             return await _context.Visits
-                .Where(v => v.CheckIn.Date >= startDate.Date && v.CheckIn.Date <= endDate.Date && v.GateId == gateId)
+                .Where(v => v.CheckIn >= startDate && v.CheckIn <= endDate && v.GateId == gateId)
                 .Select(v => new VisitModel
                 {
                     VisitId = v.VisitId,
