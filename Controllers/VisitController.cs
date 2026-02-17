@@ -227,6 +227,32 @@ namespace RVMSService.Controllers
             }
         }
 
+        [HttpGet("GetVisitorPhotos/{visitorId}")]
+        public async Task<IActionResult> GetVisitorPhotos(Guid visitorId)
+        {
+            try
+            {
+                _logger.LogInformation("Get visitor photos by ID : {VisitorId}", visitorId);
+                var visitor = await _visit.GetVisitorPhotos(visitorId);
+                if (visitor != null)
+                {
+                    _logger.LogInformation("Visitor photos retrieved with ID: {visitorId}", visitorId);
+                    return Ok(visitor);
+                }
+                else
+                {
+                    _logger.LogWarning("Visitor not found with ID: {VisitorId}", visitorId);
+                    return NotFound(new { message = "Visitor not found." });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) as needed
+                _logger.LogError(ex, "Error occurred while retrieving visitor photos");
+                return StatusCode(500, new { message = "An error occurred while retrieving the visitor photos." });
+            }
+        }
+
         //get visits without photos by date range
         [HttpGet("getVisitswithoutPhotosByDateRange")]
         public async Task<IActionResult> GetVisitswithoutPhotosByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
@@ -429,6 +455,8 @@ namespace RVMSService.Controllers
             _logger.LogInformation("Retrieved {VisitCount} DOT visits", dotVisits.Count);
             return dotVisits;
         }
+
+       
 
         //public IActionResult Index()
         //{

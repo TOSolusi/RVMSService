@@ -175,16 +175,35 @@ namespace RVMSService.Services
 
         public async Task<VisitModel?> GetVisitPhotos(Guid visitId)
         {
-            return await _context.Visits
-                .Where(v => v.VisitId == visitId)
-                .Select(v => new VisitModel
+            VisitModel? visit = await _context.Visits.Where(v => v.VisitId == visitId).FirstOrDefaultAsync();
+
+            if (visit != null)
+            {
+                return visit;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async Task<VisitorModel?> GetVisitorPhotos(Guid visitorId)
+        {
+           
+                VisitorModel? visitor = await _context.Visitors.Where(v => v.VisitorId == visitorId).FirstOrDefaultAsync();
+
+                if (visitor != null)
                 {
-                    VisitId = v.VisitId,
-                    //CurrentPhoto = v.CurrentPhoto,
-                    //VehiclePhoto = v.VehiclePhoto,
-                    //AdditionalPhoto = v.AdditionalPhoto
-                })
-                .FirstOrDefaultAsync();
+                    return visitor;
+                }
+                else
+                {
+                return null;
+                }
+
+
+          
+            
         }
 
         public async Task<List<VisitModel>> GetVisitswithoutPhotosByDateRange(DateTime startDate, DateTime endDate)
