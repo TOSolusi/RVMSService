@@ -107,7 +107,24 @@ namespace RVMSService.Services
             try
             {
                 _logger.LogInformation($"Updating QR Code with ID: {dotQR.QrCode.QrId}");
-                _context.QrCodes.Update(dotQR.QrCode);
+
+                // Retrieve the existing QR code from the database
+                var existingQrCode = await _context.QrCodes.FindAsync(dotQR.QrCode.QrId);
+                if (existingQrCode == null)
+                {
+                    _logger.LogWarning($"QR Code with ID {dotQR.QrCode.QrId} not found");
+                    return false;
+                }
+
+                // Update the properties
+                existingQrCode.QrString = dotQR.QrCode.QrString ?? existingQrCode.QrString;
+                existingQrCode.Notes = dotQR.QrCode.Notes ?? existingQrCode.Notes;
+                existingQrCode.LastUsed = dotQR.QrCode.LastUsed ?? existingQrCode.LastUsed;
+                existingQrCode.Status = dotQR.QrCode.Status ?? existingQrCode.Status;
+                existingQrCode.Used = dotQR.QrCode.Used ?? existingQrCode.Used;
+                existingQrCode.GateId = dotQR.QrCode.GateId ?? existingQrCode.GateId;
+                existingQrCode.VisitId = dotQR.QrCode.VisitId ?? existingQrCode.VisitId;
+
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("QR Code updated successfully");
                 //record audit trail
@@ -122,7 +139,7 @@ namespace RVMSService.Services
                     UserName = dotQR.AuditTrail.UserName
                 };
                 await _auditTrail.RecordAsync(audit);
-                return true; // corrected from 'refturn' to 'return'
+                return true;
             }
             catch (Exception ex)
             {
@@ -137,10 +154,8 @@ namespace RVMSService.Services
                 await _auditTrail.RecordAsync(audit);
                 _logger.LogError(ex, "Error occurred while updating QR Code in database");
                 throw new Exception("An error occurred while updating the QR Code.", ex);
-
-                return false;
             }
-        }   
+        }
 
 
         public async Task<bool> deleteQrCode(DOTQRModel dotQR)

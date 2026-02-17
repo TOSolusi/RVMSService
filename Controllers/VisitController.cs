@@ -362,7 +362,7 @@ namespace RVMSService.Controllers
                 var qrCode = await _qrCodeService.GetQRCodeById((Guid)dotVisit.visit.QrId);
                 qrCode.Used = false;
                 qrCode.LastUsed = DateTime.Now;
-                qrCode.VisitId = null;
+                //qrCode.VisitId = null;
                 var isQRsignout = await _qrCodeService.UpdateQrCode(new DOTQRModel
                 {
                     QrCode = qrCode,
