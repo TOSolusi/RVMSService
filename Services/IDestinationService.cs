@@ -10,6 +10,7 @@ namespace RVMSService.Services
         Task<DestinationModel?> GetDestinationById(Guid destinationId);
         Task UpdateDestination(DestinationModel destination);
         Task<List<DestinationModel>> GetDestinationsByGateId(Guid gateId);
-
+        Task<bool> UpdateDOTDestination(DotDestinationModel dotDestination);
+        Task<bool> AddDOTDestination(DotDestinationModel dotDestination);
     }
 }

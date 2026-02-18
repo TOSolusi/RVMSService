@@ -33,8 +33,14 @@ namespace RVMSService.Models
         public string Owner_Name { get; set; }
         public string? Owner_Email { get; set; }
         public string? Owner_Phone { get; set; }
-        public string? Notes { get; set; }
+        public string? Notes { get; set; } = null;
         public DateTime Updated_At { get; set; }
         public bool Status { get; set; }
+    }
+
+    public class DotDestinationModel
+    {
+       public DestinationModel Destination { get; set; }
+        public AuditTrailModel AuditTrail { get; set; }
     }
 }

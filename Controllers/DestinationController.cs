@@ -149,5 +149,43 @@ namespace RVMSService.Controllers
                 return new List<DestinationModel>();
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("UpdateDotDestination")]
+        public async Task<bool> UpdateDotDestination(DotDestinationModel dotDestination)
+        {
+            try
+            {
+                _logger.LogInformation("UpdateDotDestination called for ID: {DestinationId}", dotDestination.Destination.DestinationId);
+                await _destination.UpdateDOTDestination(dotDestination);
+                _logger.LogInformation("Destination with ID: {DestinationId} updated successfully", dotDestination.Destination.DestinationId);
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddDotDestination")]
+        public async Task<bool> AddDotDestination(DotDestinationModel dotDestination)
+        {
+            try
+            {
+                _logger.LogInformation("AddDotDestination called for ID: {DestinationId}", dotDestination.Destination.DestinationId);
+                await _destination.AddDOTDestination(dotDestination);
+                _logger.LogInformation("Destination with ID: {DestinationId} added successfully", dotDestination.Destination.DestinationId);
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
     }
 }
