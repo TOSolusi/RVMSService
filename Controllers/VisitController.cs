@@ -19,11 +19,12 @@ namespace RVMSService.Controllers
         private readonly IDestinationService _destinationService;
         private readonly IVisitTypeService _visitTypeService;
         private readonly IAuditTrailService _auditTrail;
+        private readonly ITelegramService _telegramService;
 
         public VisitController(ILogger<VisitController> logger, IVisitService visit,
             IVisitorService visitorService, IQRCodeService qRCodeService,
             IDestinationService destinationService, IVisitTypeService visitTypeService,
-            IAuditTrailService auditTrail)
+            IAuditTrailService auditTrail, ITelegramService telegramService)
         {
             _logger = logger;
             _visit = visit;
@@ -32,6 +33,7 @@ namespace RVMSService.Controllers
             _destinationService = destinationService;
             _visitTypeService = visitTypeService;
             _auditTrail = auditTrail;
+            _telegramService = telegramService;
         }
 
         //Add Visit
@@ -88,6 +90,41 @@ namespace RVMSService.Controllers
                 {
                     _logger.LogWarning("Failed to set QR code for visit ID: {VisitId}", visit.VisitId);
                     return StatusCode(500, new { message = "Failed to set QR code." });
+                }
+
+                // Send Telegram notification to destination owner
+                if (visit.DestinationId.HasValue)
+                {
+                    try
+                    {
+                        var destination = await _destinationService.GetDestinationById(visit.DestinationId.Value);
+                        if (destination != null && !string.IsNullOrWhiteSpace(destination.Owner_TelegramChatId))
+                        {
+                            var photos = new List<byte[]>();
+                            byte[][] cameraImages = {
+                                visitor.VisitorImage, visit.Camera1Image, visit.Camera2Image, visit.Camera3Image,
+                                visit.Camera4Image, visit.Camera5Image, visit.Camera6Image,
+                                visit.Camera7Image, visit.Camera8Image, visit.Camera9Image,
+                                visit.Camera10Image
+                            };
+                            foreach (var img in cameraImages)
+                            {
+                                if (img != null && img.Length > 0)
+                                    photos.Add(img);
+                            }
+
+                            var visitorName = visitor?.VisitorName ?? "Unknown";
+                            _ = Task.Run(() => _telegramService.SendVisitNotificationAsync(
+                                destination.Owner_TelegramChatId,
+                                visitorName,
+                                destination.Address,
+                                photos));
+                        }
+                    }
+                    catch (Exception texEx)
+                    {
+                        _logger.LogWarning(texEx, "Failed to send Telegram notification for visit {VisitId}", visit.VisitId);
+                    }
                 }
 
                 return Ok(new { message = "Add visit Success", visitId = visit.VisitId });

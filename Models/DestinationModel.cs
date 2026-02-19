@@ -33,9 +33,19 @@ namespace RVMSService.Models
         public string Owner_Name { get; set; }
         public string? Owner_Email { get; set; }
         public string? Owner_Phone { get; set; }
+        public string? Owner_TelegramChatId { get; set; }
         public string? Notes { get; set; } = null;
         public DateTime Updated_At { get; set; }
         public bool Status { get; set; }
+        public bool IsLinked
+        {
+            get
+            {
+                return  !string.IsNullOrWhiteSpace(Owner_TelegramChatId);
+            }
+        }
+        
+         
     }
 
     public class DotDestinationModel
