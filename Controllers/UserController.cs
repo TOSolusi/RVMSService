@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DPUruNet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -17,12 +18,18 @@ namespace RVMSService.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+        private const int IdentifyThreshold = 21474;
+
+
+        public UserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
+            IConfiguration configuration, ILogger<UserController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _logger = logger;
         }
 
         // DELETE: api/User/{username}
@@ -56,7 +63,8 @@ namespace RVMSService.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                FullName = model.FullName
+                FullName = model.FullName,
+                BioID = model.BioID
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -226,7 +234,8 @@ namespace RVMSService.Controllers
                     Role = string.Join(", ", roles),
                     FullName = user.FullName,
                     LastLoginTime = user.LastLoginTime,
-                    IsLockedOut = isLockedOut
+                    IsLockedOut = isLockedOut,
+                    BioID = user.BioID
                 });
             }
 
@@ -294,6 +303,7 @@ namespace RVMSService.Controllers
             user.FullName = operatorModel.FullName;
             user.UserName = operatorModel.UserName;
             user.Email = operatorModel.Email;
+            user.BioID = operatorModel.BioID;
 
             var result = await _userManager.UpdateAsync(user);
 
@@ -331,6 +341,118 @@ namespace RVMSService.Controllers
             {
                 return BadRequest(result.Errors);
             }
+        }
+
+        // POST: api/User/Fingerlogin
+        // Client sends a DPUruNet verification Fmd serialized as byte[] (base64 in JSON).
+        [HttpPost("Fingerlogin")]
+        public async Task<IActionResult> FingerLogin([FromBody] byte[] fmdBytes)
+        {
+            if (fmdBytes == null || fmdBytes.Length == 0)
+                return BadRequest(new { message = "Fingerprint data is required." });
+
+            // 1. Deserialize the incoming verification Fmd
+            Fmd verificationFmd;
+            try
+            {
+                verificationFmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(fmdBytes));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Invalid fingerprint data received");
+                return BadRequest(new { message = "Invalid fingerprint data format." });
+            }
+
+            // 2. Load all users that have an enrolled fingerprint template
+            var candidates = _userManager.Users
+                .Where(u => u.BioID != null)
+                .ToList();
+
+            if (candidates.Count == 0)
+                return Unauthorized(new { message = "No enrolled fingerprints in the system." });
+
+            // 3. Deserialize each stored enrollment Fmd and build arrays for Identify
+            var enrolledFmds = new List<Fmd>();
+            var candidateUsers = new List<ApplicationUser>();
+
+            foreach (var candidate in candidates)
+            {
+                try
+                {
+                    var fmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(candidate.BioID!));
+                    enrolledFmds.Add(fmd);
+                    candidateUsers.Add(candidate);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Skipping user {UserId}: corrupt BioID data", candidate.Id);
+                }
+            }
+
+            if (enrolledFmds.Count == 0)
+                return Unauthorized(new { message = "No valid enrolled fingerprints found." });
+
+            // 4. Use DPUruNet Comparison.Identify for fuzzy matching
+            //    (same threshold as DPUruHelper: 21474 ≈ 1/100,000 FAR)
+            var identifyResult = Comparison.Identify(
+                verificationFmd,
+                0,
+                enrolledFmds.ToArray(),
+                IdentifyThreshold,
+                enrolledFmds.Count);
+
+            if (identifyResult.ResultCode != Constants.ResultCode.DP_SUCCESS
+                || identifyResult.Indexes == null
+                || identifyResult.Indexes.Length == 0
+                || identifyResult.Indexes[0].Length == 0)
+            {
+                _logger.LogInformation("Fingerprint login failed: no match found");
+                return Unauthorized(new { message = "Fingerprint not recognized." });
+            }
+
+            // 5. Get the matched user
+            int matchIndex = identifyResult.Indexes[0][0];
+            var user = candidateUsers[matchIndex];
+
+            // 6. Check lockout
+            if (await _userManager.IsLockedOutAsync(user))
+                return Unauthorized(new { message = "Account is locked out." });
+
+            // 7. Update last login time
+            user.LastLoginTime = DateTime.Now;
+            await _userManager.UpdateAsync(user);
+
+            // 8. Generate JWT token (same logic as Login)
+            var roles = await _userManager.GetRolesAsync(user);
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
+            };
+
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"] ?? "your_secret_key_here"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtIssuer"] ?? "authcheck",
+                audience: null,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            _logger.LogInformation("Fingerprint login successful for user {UserName}", user.UserName);
+
+            return Ok(new
+            {
+                token = tokenString,
+                userName = user.UserName,
+                roles = roles.FirstOrDefault()
+            });
         }
     }
 }

@@ -8,6 +8,7 @@ namespace RVMSService.Models
     {
         public string? FullName { get; set; }
         public DateTime? LastLoginTime { get; set; }
+        public byte[]? BioID { get; set; }
     }
 
     public class UserRegisterModel
@@ -19,6 +20,7 @@ namespace RVMSService.Models
         public string Password { get; set; }
         public string Email { get; set; } // Optional
         public string? FullName { get; set; }
+        public byte[]? BioID { get; set; }
     }
 
     public class UserLoginModel
@@ -47,6 +49,7 @@ namespace RVMSService.Models
         public string Role { get; set; }
         public string? FullName { get; set; }
         public DateTime? LastLoginTime { get; set; }
+        public byte[]? BioID { get; set; }
         public bool? IsLockedOut { get; set; } 
     }
 }
