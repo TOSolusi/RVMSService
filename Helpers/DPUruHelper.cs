@@ -257,6 +257,8 @@ namespace RVMSService.Helpers
             return false;
         }
 
+
+
         private void ProcessVerification(Fmd fmd)
         {
             var enrolledList = _templates.Values.ToArray();

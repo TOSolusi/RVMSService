@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using RVMSService.Helpers;
 using RVMSService.Models;
+using RVMSService.Services;
 using System.Diagnostics.Eventing.Reader;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,17 +21,20 @@ namespace RVMSService.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly ILogger<UserController> _logger;
+        private readonly IAuditTrailService _auditTrail;
 
         private const int IdentifyThreshold = 21474;
 
 
         public UserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-            IConfiguration configuration, ILogger<UserController> logger)
+            IConfiguration configuration, ILogger<UserController> logger,
+            IAuditTrailService auditTrail)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _logger = logger;
+            _auditTrail = auditTrail;
         }
 
         // DELETE: api/User/{username}
@@ -343,19 +348,22 @@ namespace RVMSService.Controllers
             }
         }
 
-        // POST: api/User/Fingerlogin
+        // POST:650
         // Client sends a DPUruNet verification Fmd serialized as byte[] (base64 in JSON).
         [HttpPost("Fingerlogin")]
-        public async Task<IActionResult> FingerLogin([FromBody] byte[] fmdBytes)
+        //public async Task<IActionResult> FingerLogin([FromBody] byte[] fmdBytes)
+        public async Task<IActionResult> FingerLogin([FromBody] DOTUserModel dotUserModel)
         {
+            var fmdBytes = dotUserModel.User?.BioID;
             if (fmdBytes == null || fmdBytes.Length == 0)
                 return BadRequest(new { message = "Fingerprint data is required." });
 
-            // 1. Deserialize the incoming verification Fmd
+            // 1. Reconstruct the verification Fmd from raw bytes
             Fmd verificationFmd;
             try
             {
-                verificationFmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(fmdBytes));
+                //verificationFmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(fmdBytes));
+                verificationFmd = FmdSerializer.Deserialize(fmdBytes);
             }
             catch (Exception ex)
             {
@@ -379,7 +387,8 @@ namespace RVMSService.Controllers
             {
                 try
                 {
-                    var fmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(candidate.BioID!));
+                    //var fmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(candidate.BioID!));
+                    var fmd = FmdSerializer.Deserialize(candidate.BioID!);
                     enrolledFmds.Add(fmd);
                     candidateUsers.Add(candidate);
                 }
@@ -446,6 +455,20 @@ namespace RVMSService.Controllers
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             _logger.LogInformation("Fingerprint login successful for user {UserName}", user.UserName);
+
+            AuditTrailModel audit = new AuditTrailModel
+            {
+                UserName = user.UserName,
+                //Description = "Fingerprint Login",
+                Timestamp = dotUserModel.audit?.Timestamp ?? DateTime.Now,
+
+                Location = dotUserModel.audit?.Location ?? "Unknown",
+
+                Description = $"User {user.UserName} logged in using fingerprint authentication."
+            };
+
+            // Save audit trail
+            await _auditTrail.RecordAsync(audit);
 
             return Ok(new
             {
