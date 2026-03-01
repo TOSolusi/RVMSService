@@ -2,12 +2,12 @@
   "ServerAddresshttp": "0.0.0.0:5050",
   "ServerAddresshttps": "0.0.0.0:5051",
   "Server": "ASUSZENLAPTOP",
-  "Database": "RVMS",
+  "Database": "VVV",
   "IntegratedSecurity": "true",
   "UserID": "",
-  "Password": "",
+  "SqlPassword": "",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=Surface3\\SQLEXPRESS;Database=RVMS;Integrated Security=True;TrustServerCertificate=True"
+    "DefaultConnection": ""
   },
   "JwtKey": "your_super_secret_key_with_minimum_32_bytes_length!!",
   "JwtIssuer": "TotalOptimaSolusi",

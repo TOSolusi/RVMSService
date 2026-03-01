@@ -1,0 +1,25 @@
+{
+  "ServerAddresshttp": "0.0.0.0:5050",
+  "ServerAddresshttps": "0.0.0.0:5051",
+  "Server": "ASUSZENLAPTOP",
+  "Database": "RVMS",
+  "IntegratedSecurity": "true",
+  "UserID": "",
+  "SqlPassword": "",
+  "ConnectionStrings": {
+    "DefaultConnection": ""
+  },
+  "JwtKey": "your_super_secret_key_with_minimum_32_bytes_length!!",
+  "JwtIssuer": "TotalOptimaSolusi",
+  "AllowedHosts": "*",
+  "TelegramBotToken": "8595512889:AAGAqdTgOzznZXSN4zkjMONqeypiD2NkMLE",
+  "Smtp": {
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "EnableSsl": true,
+    "Username": "fenky.tjhang@gmail.com",
+    "Password": "ncfj suoh tecy lbvk",
+    "FromEmail": "fenky.tjhang@gmail.com",
+    "FromName": "RVMS Visitor System"
+  }
+}

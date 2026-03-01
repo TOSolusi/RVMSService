@@ -1,4 +1,4 @@
-﻿using DPUruNet;
+﻿//using DPUruNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +8,7 @@ using RVMSService.Models;
 using RVMSService.Services;
 using System.Diagnostics.Eventing.Reader;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 
@@ -358,8 +359,12 @@ namespace RVMSService.Controllers
             if (fmdBytes == null || fmdBytes.Length == 0)
                 return BadRequest(new { message = "Fingerprint data is required." });
 
-            // 1. Reconstruct the verification Fmd from raw bytes
-            Fmd verificationFmd;
+            //// 1. Reconstruct the verification Fmd from raw bytes
+            //Fmd verificationFmd;
+
+            // 1. Deserialize the verification FMD sent by the client.
+            byte[] verificationFmd;
+
             try
             {
                 //verificationFmd = Fmd.DeserializeXml(Encoding.UTF8.GetString(fmdBytes));
@@ -380,7 +385,9 @@ namespace RVMSService.Controllers
                 return Unauthorized(new { message = "No enrolled fingerprints in the system." });
 
             // 3. Deserialize each stored enrollment Fmd and build arrays for Identify
-            var enrolledFmds = new List<Fmd>();
+            //var enrolledFmds = new List<Fmd>();
+
+            var enrolledFmds = new List<byte[]>();
             var candidateUsers = new List<ApplicationUser>();
 
             foreach (var candidate in candidates)
@@ -403,24 +410,62 @@ namespace RVMSService.Controllers
 
             // 4. Use DPUruNet Comparison.Identify for fuzzy matching
             //    (same threshold as DPUruHelper: 21474 ≈ 1/100,000 FAR)
-            var identifyResult = Comparison.Identify(
-                verificationFmd,
-                0,
-                enrolledFmds.ToArray(),
-                IdentifyThreshold,
-                enrolledFmds.Count);
+            //var identifyResult = Comparison.Identify(
+            //    verificationFmd,
+            //    0,
+            //    enrolledFmds.ToArray(),
+            //    IdentifyThreshold,
+            //    enrolledFmds.Count);
 
-            if (identifyResult.ResultCode != Constants.ResultCode.DP_SUCCESS
-                || identifyResult.Indexes == null
-                || identifyResult.Indexes.Length == 0
-                || identifyResult.Indexes[0].Length == 0)
+            //if (identifyResult.ResultCode != Constants.ResultCode.DP_SUCCESS
+            //    || identifyResult.Indexes == null
+            //    || identifyResult.Indexes.Length == 0
+            //    || identifyResult.Indexes[0].Length == 0)
+            //{
+            //    _logger.LogInformation("Fingerprint login failed: no match found");
+            //    return Unauthorized(new { message = "Fingerprint not recognized." });
+            //}
+
+            // 4. Identify via native SDK (dpfp_identify).
+            //    Pin each enrolled FMD to get stable native pointers.
+            uint count = (uint)enrolledFmds.Count;
+            var handles = enrolledFmds.Select(f => GCHandle.Alloc(f, GCHandleType.Pinned)).ToArray();
+            int matchIndex = -1;
+
+            try
             {
-                _logger.LogInformation("Fingerprint login failed: no match found");
-                return Unauthorized(new { message = "Fingerprint not recognized." });
+                var ptrs = handles.Select(h => h.AddrOfPinnedObject()).ToArray();
+                var sizes = enrolledFmds.Select(f => (uint)f.Length).ToArray();
+                var indices = new uint[count];
+
+                int rc = DpfpddNative.dpfp_identify(
+                    verificationFmd, (uint)verificationFmd.Length,
+                    0,
+                    ptrs, sizes, count,
+                    IdentifyThreshold,
+                    out uint resultCount,
+                    indices);
+
+                if (rc != DpfpddNative.DPFPDD_SUCCESS || resultCount == 0)
+                {
+                    _logger.LogInformation("Fingerprint login failed: no match found");
+                    return Unauthorized(new { message = "Fingerprint not recognized." });
+                }
+
+                matchIndex = (int)indices[0];
+            }
+            finally
+            {
+                foreach (var h in handles) h.Free();
             }
 
+
+
+
+
+
             // 5. Get the matched user
-            int matchIndex = identifyResult.Indexes[0][0];
+            //int matchIndex = identifyResult.Indexes[0][0];
             var user = candidateUsers[matchIndex];
 
             // 6. Check lockout

@@ -4,16 +4,22 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+  
 
-  <ItemGroup>
-    <PackageReference Include="DPUruNet" Version="1.0.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />
+	<!-- Option 2: Disable Trimming & Optimize for Single/Ready-to-Run apps -->
+	<PublishTrimmed>false</PublishTrimmed>
+
+	<!-- If you are using Single File publish, ensure native unmanaged DLLs are extracted safely -->
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+	</PropertyGroup>
+	
+	
+	<ItemGroup>
+    <!--<PackageReference Include="DPUruNet" Version="1.0.0.1" />-->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.20" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
       <PrivateAssets>all</PrivateAssets>

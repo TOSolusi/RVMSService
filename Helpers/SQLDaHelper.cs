@@ -35,7 +35,7 @@ namespace RVMSService.Helpers
             else
             {
                 stringUser = _configuration.GetValue<string>("User") ?? "sa";
-                stringPassword = _configuration.GetValue<string>("Password") ?? "your_password";
+                stringPassword = _configuration.GetValue<string>("SqlPassword") ?? "your_password";
                 connString = $"Server={StringServer};Database={StringDatabase};User Id={stringUser};Password={stringPassword};  Encrypt=False;";
             }
 
