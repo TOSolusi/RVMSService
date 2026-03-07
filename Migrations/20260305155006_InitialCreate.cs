@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RVMSService.Migrations
 {
     /// <inheritdoc />
-    public partial class initmigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +30,9 @@ namespace RVMSService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastLoginTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BioID = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -48,6 +51,153 @@ namespace RVMSService.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditTrails",
+                columns: table => new
+                {
+                    AuditTrailId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditTrails", x => x.AuditTrailId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Destinations",
+                columns: table => new
+                {
+                    DestinationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Gates = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Owner_Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Owner_Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Owner_Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Owner_TelegramChatId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Updated_At = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Destinations", x => x.DestinationId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Gates",
+                columns: table => new
+                {
+                    GateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GateName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Gates", x => x.GateId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "QrCodes",
+                columns: table => new
+                {
+                    QrId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QrString = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastUsed = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: true),
+                    Used = table.Column<bool>(type: "bit", nullable: true),
+                    GateId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QrCodes", x => x.QrId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Visitors",
+                columns: table => new
+                {
+                    VisitorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VisitorIdNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VisitorName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VisitorPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastVisit = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    VisitorImageName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VisitorImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Blacklist = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Visitors", x => x.VisitorId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Visits",
+                columns: table => new
+                {
+                    VisitId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VisitorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    GateId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    QrId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DestinationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CheckIn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CheckOut = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: true),
+                    Camera1Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera1Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera2Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera2Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera3Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera3Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera4Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera4Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera5Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera5Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera6Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera6Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera7Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera7Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera8Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera8Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera9Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera9Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Camera10Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Camera10Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Visits", x => x.VisitId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VisitTypes",
+                columns: table => new
+                {
+                    TypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TypeVisit = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TypeDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TypeColorBadge = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: true),
+                    Default = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VisitTypes", x => x.TypeId);
                 });
 
             migrationBuilder.CreateTable(
@@ -213,6 +363,27 @@ namespace RVMSService.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "AuditTrails");
+
+            migrationBuilder.DropTable(
+                name: "Destinations");
+
+            migrationBuilder.DropTable(
+                name: "Gates");
+
+            migrationBuilder.DropTable(
+                name: "QrCodes");
+
+            migrationBuilder.DropTable(
+                name: "Visitors");
+
+            migrationBuilder.DropTable(
+                name: "Visits");
+
+            migrationBuilder.DropTable(
+                name: "VisitTypes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

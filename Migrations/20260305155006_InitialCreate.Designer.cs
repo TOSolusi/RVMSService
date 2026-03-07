@@ -12,8 +12,8 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20251015080220_update5")]
-    partial class update5
+    [Migration("20260305155006_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,71 +75,6 @@ namespace RVMSService.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -223,6 +158,80 @@ namespace RVMSService.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("RVMSService.Models.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("BioID")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastLoginTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
             modelBuilder.Entity("RVMSService.Models.AuditTrailModel", b =>
                 {
                     b.Property<Guid?>("AuditTrailId")
@@ -230,22 +239,25 @@ namespace RVMSService.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Category")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Location")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("Timestamp")
+                    b.Property<DateTime?>("Timestamp")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("AuditTrailId");
 
@@ -262,15 +274,13 @@ namespace RVMSService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("GateId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Gates")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Owner_Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Owner_Name")
@@ -278,7 +288,9 @@ namespace RVMSService.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Owner_Phone")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Owner_TelegramChatId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
@@ -323,24 +335,29 @@ namespace RVMSService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("GateId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("LastUsed")
+                    b.Property<DateTime?>("LastUsed")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("QrString")
-                        .IsRequired()
+                    b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Status")
+                    b.Property<string>("QrString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("Used")
+                    b.Property<bool?>("Used")
                         .HasColumnType("bit");
+
+                    b.Property<Guid?>("VisitId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("QrId");
 
@@ -349,13 +366,69 @@ namespace RVMSService.Migrations
 
             modelBuilder.Entity("RVMSService.Models.VisitModel", b =>
                 {
-                    b.Property<Guid>("VisitId")
+                    b.Property<Guid?>("VisitId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte[]>("AdditionalPhoto")
-                        .IsRequired()
+                    b.Property<byte[]>("Camera10Image")
                         .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera10Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera1Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera1Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera2Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera2Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera3Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera3Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera4Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera4Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera5Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera5Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera6Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera6Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera7Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera7Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera8Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera8Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Camera9Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Camera9Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CheckIn")
                         .HasColumnType("datetime2");
@@ -363,33 +436,25 @@ namespace RVMSService.Migrations
                     b.Property<DateTime?>("CheckOut")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte[]>("CurrentPhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<Guid>("DestinationId")
+                    b.Property<Guid?>("DestinationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("GateId")
+                    b.Property<Guid?>("GateId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("QrId")
+                    b.Property<Guid?>("QrId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("Status")
+                    b.Property<bool?>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("TypeId")
+                    b.Property<Guid?>("TypeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte[]>("VehiclePhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<Guid>("VisitorId")
+                    b.Property<Guid?>("VisitorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("VisitId");
@@ -399,25 +464,26 @@ namespace RVMSService.Migrations
 
             modelBuilder.Entity("RVMSService.Models.VisitTypeModel", b =>
                 {
-                    b.Property<Guid>("TypeId")
+                    b.Property<Guid?>("TypeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("Default")
+                    b.Property<bool?>("Default")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("Status")
+                    b.Property<bool?>("Status")
                         .HasColumnType("bit");
 
                     b.Property<string>("TypeColorBadge")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TypeDescription")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TypeVisit")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("TypeId");
@@ -427,30 +493,29 @@ namespace RVMSService.Migrations
 
             modelBuilder.Entity("RVMSService.Models.VisitorModel", b =>
                 {
-                    b.Property<Guid>("VisitorId")
+                    b.Property<Guid?>("VisitorId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("Blacklist")
+                    b.Property<bool?>("Blacklist")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastVisit")
+                    b.Property<DateTime?>("LastVisit")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("VisitorIdNo")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("VisitorImage")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<string>("VisitorImageName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("VisitorName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VisitorPhone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("VisitorId");
@@ -469,7 +534,7 @@ namespace RVMSService.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("RVMSService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -478,7 +543,7 @@ namespace RVMSService.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("RVMSService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -493,7 +558,7 @@ namespace RVMSService.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("RVMSService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -502,7 +567,7 @@ namespace RVMSService.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("RVMSService.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

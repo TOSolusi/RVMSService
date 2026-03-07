@@ -132,7 +132,7 @@ namespace RVMSService.Controllers
                 issuer: _configuration["JwtIssuer"] ?? "authcheck",
                 audience: null,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.Now.AddHours(1),
                 signingCredentials: creds);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
