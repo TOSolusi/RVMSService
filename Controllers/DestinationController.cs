@@ -211,7 +211,18 @@ namespace RVMSService.Controllers
                     try
                     {
                         var subject = "RVMS - Link Your Telegram for Visitor Notifications";
-                        var htmlBody = $@"
+
+                        // Path to the email template file in the Settings directory
+                        var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Settings", "TelegramEmailTemplate.html");
+
+                        // Check if the template exists, otherwise fallback or throw an error
+                        if (!System.IO.File.Exists(templatePath))
+                        {
+                            _logger.LogWarning("Email template not found at {Path}", templatePath);
+                            // You can throw an exception or handle it as required.
+
+                           
+                            var htmlBody = $@"
                             <html>
                             <body style='font-family: Arial, sans-serif; color: #333;'>
                                 <h2>Hello {destination.Owner_Name},</h2>
@@ -234,16 +245,35 @@ namespace RVMSService.Controllers
                             </body>
                             </html>";
 
-                        await _emailService.SendEmailAsync(destination.Owner_Email, subject, htmlBody);
-                        emailSent = true;
-                        _logger.LogInformation("Telegram link email sent to {Email} for destination {DestinationId}",
-                            destination.Owner_Email, destinationId);
+
+
+                            await _emailService.SendEmailAsync(destination.Owner_Email, subject, htmlBody);
+                            emailSent = true;
+                            _logger.LogInformation("Telegram link email sent to {Email} for destination {DestinationId}",
+                                destination.Owner_Email, destinationId);
+                        }
+                        else
+                        {
+                            // Read the template content and replace placeholders
+                            var templateContent = await System.IO.File.ReadAllTextAsync(templatePath);
+                            var htmlBody = templateContent
+                                .Replace("{{Owner_Name}}", destination.Owner_Name)
+                                .Replace("{{Address}}", destination.Address)
+                                .Replace("{{Link}}", link);
+
+                            await _emailService.SendEmailAsync(destination.Owner_Email, subject, htmlBody);
+                            emailSent = true;
+                            _logger.LogInformation("Telegram link email sent to {Email} for destination {DestinationId}",
+                                destination.Owner_Email, destinationId);
+                        }
                     }
                     catch (Exception emailEx)
                     {
                         _logger.LogWarning(emailEx, "Failed to send Telegram link email to {Email}", destination.Owner_Email);
                     }
                 }
+                    
+                
 
                 return Ok(new
                 {

@@ -101,16 +101,32 @@ namespace RVMSService.Controllers
                         if (destination != null && !string.IsNullOrWhiteSpace(destination.Owner_TelegramChatId))
                         {
                             var photos = new List<byte[]>();
-                            byte[][] cameraImages = {
-                                visitor.VisitorImage, visit.Camera1Image, visit.Camera2Image, visit.Camera3Image,
-                                visit.Camera4Image, visit.Camera5Image, visit.Camera6Image,
-                                visit.Camera7Image, visit.Camera8Image, visit.Camera9Image,
-                                visit.Camera10Image
-                            };
-                            foreach (var img in cameraImages)
+                            var titles = new List<string>();
+
+                            // Pair images with their corresponding names
+                            var imageMap = new[]
                             {
-                                if (img != null && img.Length > 0)
-                                    photos.Add(img);
+                                (Image: visitor.VisitorImage, Name: visitor.VisitorImageName),
+                                (Image: visit.Camera1Image, Name: visit.Camera1Name),
+                                (Image: visit.Camera2Image, Name: visit.Camera2Name),
+                                (Image: visit.Camera3Image, Name: visit.Camera3Name),
+                                (Image: visit.Camera4Image, Name: visit.Camera4Name),
+                                (Image: visit.Camera5Image, Name: visit.Camera5Name),
+                                (Image: visit.Camera6Image, Name: visit.Camera6Name),
+                                (Image: visit.Camera7Image, Name: visit.Camera7Name),
+                                (Image: visit.Camera8Image, Name: visit.Camera8Name),
+                                (Image: visit.Camera9Image, Name: visit.Camera9Name),
+                                (Image: visit.Camera10Image, Name: visit.Camera10Name)
+                            };
+
+                            foreach (var item in imageMap)
+                            {
+                                if (item.Image != null && item.Image.Length > 0)
+                                {
+                                    photos.Add(item.Image);
+                                    // Use a fallback like "Photo" if the name property was null
+                                    titles.Add(!string.IsNullOrWhiteSpace(item.Name) ? item.Name : "Photo");
+                                }
                             }
 
                             var visitorName = visitor?.VisitorName ?? "Unknown";
@@ -118,7 +134,7 @@ namespace RVMSService.Controllers
                                 destination.Owner_TelegramChatId,
                                 visitorName,
                                 destination.Address,
-                                photos));
+                                photos, titles));
                         }
                     }
                     catch (Exception texEx)
