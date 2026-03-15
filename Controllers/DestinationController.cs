@@ -291,5 +291,23 @@ namespace RVMSService.Controllers
                 return StatusCode(500, new { message = "Failed to generate Telegram link." });
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("RemoveTelegramLink")]
+        public async Task<IActionResult> RemoveTelegramLink(DotDestinationModel dotDestination)
+        {
+            try
+            {
+                dotDestination.Destination.Owner_TelegramChatId = null;
+                await _destination.ResetTelegramLink(dotDestination);
+                return Ok(new { message = "Telegram link removed successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing Telegram link for destination {DestinationId}", dotDestination.Destination.DestinationId);
+                return StatusCode(500, new { message = $"Failed to remove Telegram link. {ex.Message}" });
+            }
+        }
+         
     }
 }

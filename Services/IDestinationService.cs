@@ -12,5 +12,6 @@ namespace RVMSService.Services
         Task<List<DestinationModel>> GetDestinationsByGateId(Guid gateId);
         Task<bool> UpdateDOTDestination(DotDestinationModel dotDestination);
         Task<bool> AddDOTDestination(DotDestinationModel dotDestination);
+        Task<bool> ResetTelegramLink(DotDestinationModel dotDestination);
     }
 }

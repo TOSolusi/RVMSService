@@ -224,6 +224,7 @@ namespace RVMSService.Services
                 existingDestination.Gates = dotDestination.Destination.Gates;
                 existingDestination.Notes = dotDestination.Destination.Notes ?? existingDestination.Notes;
                 existingDestination.Owner_Phone = dotDestination.Destination.Owner_Phone ?? existingDestination.Owner_Phone;
+                existingDestination.Owner_TelegramChatId = dotDestination.Destination.Owner_TelegramChatId ?? existingDestination.Owner_TelegramChatId;
                 
 
                 await _context.SaveChangesAsync();
@@ -297,5 +298,120 @@ namespace RVMSService.Services
             }
 
         }
+
+        public async Task<bool> ResetTelegramLink(DotDestinationModel dotDestination)
+        {
+            try
+            {
+                _logger.LogInformation($"Resetting Telegram Link for Destination with ID: {dotDestination.Destination.DestinationId}");
+
+                // Retrieve the existing destination from the database
+                var existingDestination = await _context.Destinations.FindAsync(dotDestination.Destination.DestinationId);
+                if (existingDestination == null)
+                {
+                    _logger.LogWarning($"Destination with ID {dotDestination.Destination.DestinationId} not found");
+                    return false;
+                }
+
+                // Update the properties
+                existingDestination.Address = dotDestination.Destination.Address ?? existingDestination.Address;
+                existingDestination.Owner_Name = dotDestination.Destination.Owner_Name ?? existingDestination.Owner_Name;
+                existingDestination.Owner_Email = dotDestination.Destination.Owner_Email ?? existingDestination.Owner_Email;
+                existingDestination.Updated_At = dotDestination.Destination.Updated_At != default ? dotDestination.Destination.Updated_At : existingDestination.Updated_At;
+                existingDestination.Status = dotDestination.Destination.Status;
+                existingDestination.Gates = dotDestination.Destination.Gates;
+                existingDestination.Notes = dotDestination.Destination.Notes ?? existingDestination.Notes;
+                existingDestination.Owner_Phone = dotDestination.Destination.Owner_Phone ?? existingDestination.Owner_Phone;
+                existingDestination.Owner_TelegramChatId = null; // Reset Telegram link by setting it to null
+
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Telegram link reset successfully");
+                //record audit trail
+                var audit = new AuditTrailModel
+                {
+                    //UserId = /* get user id from context */
+                    Description = dotDestination.AuditTrail.Description,
+                    Timestamp = DateTime.Now,
+                    Status = "Success",
+                    Category = "Destination",
+                    Location = dotDestination.AuditTrail.Location,
+                    UserName = dotDestination.AuditTrail.UserName
+                };
+                await _auditTrail.RecordAsync(audit);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var audit = new AuditTrailModel
+                {
+                    //UserId = , /* get user id from context */
+                    Description = $"Update Destination {dotDestination.Destination.DestinationId} fail",
+                    Timestamp = DateTime.Now,
+                    Status = "Failure",
+                    Category = "Destination"
+                };
+                await _auditTrail.RecordAsync(audit);
+                _logger.LogError(ex, "Error occurred while updating Destination in database");
+                throw new Exception("An error occurred while updating the Destination.", ex);
+            }
+        }
+
+        //public async Task<bool> UpdateDotDestination(DotDestinationModel dotDestination)
+        //{
+        //    try
+        //    {
+        //        _logger.LogInformation($"Updating Destination with ID: {dotDestination.Destination.DestinationId}");
+        //        // Retrieve the existing destination from the database
+        //        var existingDestination = await _context.Destinations.FindAsync(dotDestination.Destination.DestinationId);
+        //        if (existingDestination != null)
+        //        {
+        //            // Update the properties
+        //            existingDestination.Address = dotDestination.Destination.Address ?? existingDestination.Address;
+        //            existingDestination.Owner_Name = dotDestination.Destination.Owner_Name ?? existingDestination.Owner_Name;
+        //            existingDestination.Owner_Email = dotDestination.Destination.Owner_Email ?? existingDestination.Owner_Email;
+        //            existingDestination.Updated_At = DateTime.Now;
+        //            existingDestination.Status = dotDestination.Destination.Status;
+        //            existingDestination.Gates = dotDestination.Destination.Gates;
+        //            existingDestination.Notes = dotDestination.Destination.Notes ?? existingDestination.Notes;
+        //            existingDestination.Owner_Phone = dotDestination.Destination.Owner_Phone ?? existingDestination.Owner_Phone;
+        //            existingDestination.Owner_TelegramChatId = dotDestination.Destination.Owner_TelegramChatId ?? existingDestination.Owner_TelegramChatId;
+        //            await _context.SaveChangesAsync();
+        //            _logger.LogInformation("Destination updated successfully");
+        //            //record audit trail
+        //            var audit = new AuditTrailModel
+        //            {
+        //                //UserId = /* get user id from context */
+        //                Description = dotDestination.AuditTrail.Description ?? $"Update Destination {dotDestination.Destination.DestinationId}",
+        //                Timestamp = DateTime.Now,
+        //                Status = "Success",
+        //                Category = "Destination",
+        //                Location = dotDestination.AuditTrail.Location,
+        //                UserName = dotDestination.AuditTrail.UserName
+        //            };
+        //            await _auditTrail.RecordAsync(audit);
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            _logger.LogWarning($"Destination with ID {dotDestination.Destination.DestinationId} not found");
+        //            return false;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var audit = new AuditTrailModel
+        //        {
+        //            //UserId = , /* get user id from context */
+        //            Description = $"Update Destination {dotDestination.Destination.DestinationId} fail",
+        //            Timestamp = DateTime.Now,
+        //            Status = "Failure",
+        //            Category = "Destination"
+        //        };
+        //        await _auditTrail.RecordAsync(audit);
+        //        _logger.LogError(ex, "Error occurred while updating Destination in database");
+        //        throw new Exception("An error occurred while updating the Destination.", ex);
+        //    }
+        //}
     }
 }
