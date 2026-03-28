@@ -115,6 +115,7 @@ namespace RVMSService.Services
                 existingGate.Description = gate.Description;
                 existingGate.UpdatedAt = DateTime.Now;
                 existingGate.Status = gate.Status;
+                existingGate.DoorNumber = gate.DoorNumber;
                 // Update other properties as needed
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Gate updated with ID: {GateId}", gate.GateId);

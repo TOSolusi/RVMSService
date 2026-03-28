@@ -13,6 +13,7 @@ namespace RVMSService.Models
         public string Description { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool Status { get; set; }
-       
+        public int? DoorNumber { get; set; }
+
     }
 }

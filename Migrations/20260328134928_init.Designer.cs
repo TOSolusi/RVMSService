@@ -12,8 +12,8 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20260305155006_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260328134928_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -313,6 +313,9 @@ namespace RVMSService.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DoorNumber")
+                        .HasColumnType("int");
 
                     b.Property<string>("GateName")
                         .IsRequired()

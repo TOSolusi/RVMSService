@@ -21,5 +21,10 @@
     "Password": "ncfj suoh tecy lbvk",
     "FromEmail": "fenky.tjhang@gmail.com",
     "FromName": "RVMS Visitor System"
-  }
+  },
+  "ACIntegration": true,
+  "AccessControlGatewayServer": "192.168.2.121",
+  "AccessControlGatewayPort": 8021
+   
+  
 }

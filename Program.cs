@@ -102,6 +102,7 @@ namespace RVMSService
             builder.Services.AddScoped<IVisitorService, VisitorService>();
             builder.Services.AddScoped<IVisitService, VisitService>();
             builder.Services.AddScoped<IHealthCheckService, HealthCheckService>();
+            builder.Services.AddScoped<IAccessControlServices, AccessControlServices>();
             builder.Services.AddSingleton<ITelegramService, TelegramService>();
             builder.Services.AddSingleton<IEmailService, EmailService>();
             builder.Services.AddHostedService<TelegramBotPollingService>();

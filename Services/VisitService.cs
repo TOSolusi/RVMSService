@@ -10,14 +10,23 @@ namespace RVMSService.Services
         private readonly ILogger<VisitService> _logger;
         private readonly IAuditTrailService _auditTrail;
         private readonly IVisitorService _visitorService;
+        private readonly IAccessControlServices _accessControlService;
+        private readonly IConfiguration _configuration;
+
+        private bool? accesscontrolintegrated = false;
 
         public VisitService(AppDBContext context, ILogger<VisitService> logger,
-            IAuditTrailService auditTrail, IVisitorService visitorService)
+            IAuditTrailService auditTrail, IVisitorService visitorService, 
+            IAccessControlServices accessControlService, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
             _auditTrail = auditTrail;
             _visitorService = visitorService;
+            _accessControlService = accessControlService;
+            _configuration = configuration;
+
+            accesscontrolintegrated = _configuration.GetValue<bool>("ACIntegration");
 
         }
 
@@ -35,6 +44,15 @@ namespace RVMSService.Services
                 await _context.Visits.AddAsync(visit);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Visit added with ID: {visit.VisitId}. ");
+
+                //Optionally trigger door open event when visit is added
+
+                if (accesscontrolintegrated == true)
+                {
+                    var doorNumber = await _context.Gates.Where(g => g.GateName == dotVisit.auditTrail.Location).Select(g => g.DoorNumber).FirstOrDefaultAsync();
+                    await _accessControlService.AllowAccess((int)doorNumber);
+                }
+
                 // Record audit trail
                 var audit = new AuditTrailModel
                 {
