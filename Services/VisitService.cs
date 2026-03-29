@@ -49,8 +49,11 @@ namespace RVMSService.Services
 
                 if (accesscontrolintegrated == true)
                 {
-                    var doorNumber = await _context.Gates.Where(g => g.GateName == dotVisit.auditTrail.Location).Select(g => g.DoorNumber).FirstOrDefaultAsync();
-                    await _accessControlService.AllowAccess((int)doorNumber);
+                    var doorNumber = await _context.Gates.Where(g => g.GateId == dotVisit.visit.GateId).Select(g => g.DoorNumber).FirstOrDefaultAsync();
+                    if (doorNumber != null)
+                    {
+                        await _accessControlService.AllowAccess((int)doorNumber);
+                    }
                 }
 
                 // Record audit trail

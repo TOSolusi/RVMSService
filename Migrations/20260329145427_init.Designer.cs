@@ -12,7 +12,7 @@ using RVMSService.Data;
 namespace RVMSService.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20260328134928_init")]
+    [Migration("20260329145427_init")]
     partial class init
     {
         /// <inheritdoc />

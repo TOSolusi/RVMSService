@@ -31,11 +31,11 @@ namespace RVMSService.Services
         {
             try
             {
-                var url = $"http://{accessControlGateway}:{accessControlGatewayPort}/api/allowaccess";
+                var url = $"http://{accessControlGateway}:{accessControlGatewayPort}/api/access/allowaccess";
 
                 //initialize httpclient
                 //_httpClient = new HttpClient();
-                var response = await _httpClient.PostAsJsonAsync(url, new { GlobalDoorNumber = globalDoorNumber });
+                var response = await _httpClient.PostAsync($"{url}?globalDoorNumber={globalDoorNumber}", null);
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Access allowed for GlobalDoorNumber: {GlobalDoorNumber}", globalDoorNumber);
