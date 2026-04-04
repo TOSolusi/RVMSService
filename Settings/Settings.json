@@ -12,7 +12,7 @@
   "JwtKey": "your_super_secret_key_with_minimum_32_bytes_length!!",
   "JwtIssuer": "TotalOptimaSolusi",
   "AllowedHosts": "*",
-  "TelegramBotToken": "8595512889:AAGAqdTgOzznZXSN4zkjMONqeypiD2NkMLE",
+  "TelegramBotToken": "8676655912:AAGJ-rywjepLzdhmS50Eb-b7CpOMoz0_MiA",
   "Smtp": {
     "Host": "smtp.gmail.com",
     "Port": 587,
@@ -25,6 +25,6 @@
   "ACIntegration": true,
   "AccessControlGatewayServer": "192.168.2.121",
   "AccessControlGatewayPort": 8021
-   
-  
+
+
 }

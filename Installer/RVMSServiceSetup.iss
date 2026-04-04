@@ -1,5 +1,5 @@
 #define MyAppName "RVMS Service"
-#define MyAppVersion "1.2.4"
+#define MyAppVersion "1.4.1"
 #define MyAppPublisher "Total Optima Solusi"
 #define MyAppExeName "RVMSService.exe"
 #define ServiceName "RVMSService"
@@ -22,10 +22,11 @@ DisableDirPage=no
 DisableReadyPage=yes
 
 [Files]
-; Single source — use ONLY the publish output folder
+; Main application files
 Source: "Files\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Always overwrite Settings.json so StringChangeEx patterns match
-Source: "Files\Settings\Settings.json"; DestDir: "{app}\Settings"; Flags: ignoreversion
+; Settings.json is deployed by the wildcard above on fresh install.
+; On upgrade the [Code] section backs it up before copy and restores it after,
+; so user customisations are never lost.
 Source: "SetupDatabase.ps1"; DestDir: "{app}\Installer"; Flags: ignoreversion
 
 [Dirs]
@@ -43,7 +44,7 @@ Filename: "sc.exe"; Parameters: "delete {#ServiceName}"; Flags: runhidden waitun
 Filename: "icacls.exe"; Parameters: """{app}\Settings\Settings.json"" /grant *S-1-5-32-545:(M)"; Flags: runhidden waituntilterminated; StatusMsg: "Setting file permissions..."
 
 ; --- Database setup (create DB + login + migrations) ---
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Installer\SetupDatabase.ps1"" -SqlServer ""{code:GetSqlServer}"" -DatabaseName ""{code:GetDatabaseName}"" -UseIntegrated ""{code:GetUseIntegrated}"" -SqlUser ""{code:GetSqlUser}"" -SqlPassword ""{code:GetSqlPassword}"" -AppPath ""{app}"""; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Installer\SetupDatabase.ps1"" -SqlServer ""{code:GetSqlServer}"" -DatabaseName ""{code:GetDatabaseName}"" -UseIntegrated ""{code:GetUseIntegrated}"" -SqlUser ""{code:GetSqlUser}"" -SqlPassword ""{code:GetSqlPassword}"" -AppPath ""{app}"" -IsUpgrade ""{code:GetIsUpgrade}"""; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
 
 ; --- Firewall rule ---
 Filename: "netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"""; Flags: runhidden waituntilterminated
@@ -64,9 +65,78 @@ Filename: "netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#My
 var
   ConfigPage: TInputQueryWizardPage;
   AuthPage: TInputQueryWizardPage;
+  UpgradeDetected: Boolean;
+
+{ ── Helper: extract a JSON string value by key name ── }
+function ExtractJsonStringValue(const Content, Key: String): String;
+var
+  P, Q: Integer;
+  SearchKey: String;
+begin
+  Result := '';
+  SearchKey := '"' + Key + '"';
+  P := Pos(SearchKey, Content);
+  if P = 0 then Exit;
+  P := P + Length(SearchKey);
+  while (P <= Length(Content)) and (Content[P] <> ':') do
+    P := P + 1;
+  if P > Length(Content) then Exit;
+  P := P + 1;
+  while (P <= Length(Content)) and ((Content[P] = ' ') or (Content[P] = #9) or (Content[P] = #10) or (Content[P] = #13)) do
+    P := P + 1;
+  if (P > Length(Content)) or (Content[P] <> '"') then Exit;
+  P := P + 1;
+  Q := P;
+  while (Q <= Length(Content)) and (Content[Q] <> '"') do
+    Q := Q + 1;
+  Result := Copy(Content, P, Q - P);
+end;
+
+{ ── Read existing Settings.json into wizard-page values so every
+     Get* function returns the correct value on upgrade ── }
+procedure ReadExistingSettings;
+var
+  SettingsPath: String;
+  AnsiContent: AnsiString;
+  Content, Val, ServerAddr: String;
+  ColonPos: Integer;
+begin
+  SettingsPath := ExpandConstant('{app}\Settings\Settings.json');
+  if not FileExists(SettingsPath) then Exit;
+  if not LoadStringFromFile(SettingsPath, AnsiContent) then Exit;
+  Content := String(AnsiContent);
+
+  Val := ExtractJsonStringValue(Content, 'Server');
+  if Val <> '' then ConfigPage.Values[0] := Val;
+
+  Val := ExtractJsonStringValue(Content, 'Database');
+  if Val <> '' then ConfigPage.Values[1] := Val;
+
+  ServerAddr := ExtractJsonStringValue(Content, 'ServerAddresshttp');
+  if ServerAddr <> '' then
+  begin
+    ColonPos := Pos(':', ServerAddr);
+    if ColonPos > 0 then
+      ConfigPage.Values[2] := Copy(ServerAddr, ColonPos + 1, Length(ServerAddr) - ColonPos);
+  end;
+
+  Val := ExtractJsonStringValue(Content, 'IntegratedSecurity');
+  if Lowercase(Val) = 'true' then
+    ConfigPage.Values[3] := 'yes'
+  else if Lowercase(Val) = 'false' then
+    ConfigPage.Values[3] := 'no';
+
+  Val := ExtractJsonStringValue(Content, 'UserID');
+  if Val <> '' then AuthPage.Values[0] := Val;
+
+  Val := ExtractJsonStringValue(Content, 'Password');
+  if Val <> '' then AuthPage.Values[1] := Val;
+end;
 
 procedure InitializeWizard;
 begin
+  UpgradeDetected := False;
+
   ConfigPage := CreateInputQueryPage(wpSelectDir,
     'Database Configuration',
     'Configure the SQL Server connection',
@@ -93,6 +163,15 @@ end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
+  { On upgrade skip both configuration pages — existing settings are preserved }
+  if (PageID = ConfigPage.ID) or (PageID = AuthPage.ID) then
+  begin
+    if FileExists(ExpandConstant('{app}\Settings\Settings.json')) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
   if PageID = AuthPage.ID then
     Result := (Lowercase(ConfigPage.Values[3]) = 'yes');
 end;
@@ -128,6 +207,14 @@ end;
 function GetSqlPassword(Param: String): String;
 begin
   Result := AuthPage.Values[1];
+end;
+
+function GetIsUpgrade(Param: String): String;
+begin
+  if UpgradeDetected then
+    Result := 'yes'
+  else
+    Result := 'no';
 end;
 
 procedure UpdateSettingsFile;
@@ -176,7 +263,39 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  SettingsPath, BackupPath: String;
 begin
+  SettingsPath := ExpandConstant('{app}\Settings\Settings.json');
+  BackupPath  := SettingsPath + '.bak';
+
+  if CurStep = ssInstall then
+  begin
+    { Detect upgrade BEFORE files are copied }
+    UpgradeDetected := FileExists(SettingsPath);
+    if UpgradeDetected then
+    begin
+      { Populate wizard-page values from existing config so every
+        Get* function (used by [Run]) returns the correct value }
+      ReadExistingSettings;
+      { Back up the user's Settings.json before the file-copy overwrites it }
+      FileCopy(SettingsPath, BackupPath, False);
+    end;
+  end;
+
   if CurStep = ssPostInstall then
-    UpdateSettingsFile;
+  begin
+    if UpgradeDetected then
+    begin
+      { Restore the original Settings.json — user customisations preserved }
+      if FileExists(BackupPath) then
+      begin
+        DeleteFile(SettingsPath);
+        RenameFile(BackupPath, SettingsPath);
+      end;
+    end
+    else
+      { Fresh install — apply wizard values to the template Settings.json }
+      UpdateSettingsFile;
+  end;
 end;

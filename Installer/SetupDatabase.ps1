@@ -13,7 +13,8 @@ param(
     [string]$UseIntegrated,
     [string]$SqlUser,
     [string]$SqlPassword,
-    [string]$AppPath
+    [string]$AppPath,
+    [string]$IsUpgrade = "no"
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,46 +35,51 @@ Write-Log "=== RVMS Database Setup Starting ==="
 Write-Log "SQL Server: $SqlServer"
 Write-Log "Database: $DatabaseName"
 Write-Log "Integrated Security: $UseIntegrated"
+Write-Log "Is Upgrade: $IsUpgrade"
 
-# ── Step 0: Ensure Settings.json matches user input ──
-Write-Log "Updating Settings.json with target database configuration..."
-$settingsPath = Join-Path $AppPath "Settings\Settings.json"
-if (Test-Path $settingsPath) {
-    try {
-        $jsonContent = Get-Content -Path $settingsPath -Raw
-        $jsonObj = ConvertFrom-Json -InputObject $jsonContent
-        
-        # Apply the user database overrides natively to the JSON object
-        $jsonObj.Server = $SqlServer
-        $jsonObj.Database = $DatabaseName
-        
-        if ($UseIntegrated -eq "yes") {
-            $jsonObj.IntegratedSecurity = "true"
-        } else {
-            $jsonObj.IntegratedSecurity = "false"
-            $jsonObj.UserID = $SqlUser
-            $jsonObj.Password = $SqlPassword
-        }
-        
-        # Safely update the DefaultConnection fallback just in case
-        $cs = ""
-        if ($UseIntegrated -eq "yes") {
-            $cs = "Server=$SqlServer;Database=$DatabaseName;Integrated Security=True;TrustServerCertificate=True"
-        } else {
-            $cs = "Server=$SqlServer;Database=$DatabaseName;User ID=$SqlUser;Password=$SqlPassword;Integrated Security=False;TrustServerCertificate=True"
-        }
-        if ($null -ne $jsonObj.ConnectionStrings) {
-            $jsonObj.ConnectionStrings.DefaultConnection = $cs
-        }
-
-        # Convert back to JSON and overwrite the file
-        $jsonObj | ConvertTo-Json -Depth 10 | Set-Content -Path $settingsPath -Encoding UTF8
-        Write-Log "Settings.json securely updated."
-    } catch {
-        Write-Log "WARNING: Could not update Settings.json via PowerShell. $_"
-    }
+# ── Step 0: Update Settings.json — ONLY on fresh install ──
+if ($IsUpgrade -eq "yes") {
+    Write-Log "Upgrade detected — skipping Settings.json modification (existing config preserved)."
 } else {
-    Write-Log "WARNING: Settings.json not found at '$settingsPath'."
+    Write-Log "Fresh install — updating Settings.json with target database configuration..."
+    $settingsPath = Join-Path $AppPath "Settings\Settings.json"
+    if (Test-Path $settingsPath) {
+        try {
+            $jsonContent = Get-Content -Path $settingsPath -Raw
+            $jsonObj = ConvertFrom-Json -InputObject $jsonContent
+
+            # Apply the user database overrides natively to the JSON object
+            $jsonObj.Server = $SqlServer
+            $jsonObj.Database = $DatabaseName
+
+            if ($UseIntegrated -eq "yes") {
+                $jsonObj.IntegratedSecurity = "true"
+            } else {
+                $jsonObj.IntegratedSecurity = "false"
+                $jsonObj.UserID = $SqlUser
+                $jsonObj.Password = $SqlPassword
+            }
+
+            # Safely update the DefaultConnection fallback just in case
+            $cs = ""
+            if ($UseIntegrated -eq "yes") {
+                $cs = "Server=$SqlServer;Database=$DatabaseName;Integrated Security=True;TrustServerCertificate=True"
+            } else {
+                $cs = "Server=$SqlServer;Database=$DatabaseName;User ID=$SqlUser;Password=$SqlPassword;Integrated Security=False;TrustServerCertificate=True"
+            }
+            if ($null -ne $jsonObj.ConnectionStrings) {
+                $jsonObj.ConnectionStrings.DefaultConnection = $cs
+            }
+
+            # Convert back to JSON and overwrite the file
+            $jsonObj | ConvertTo-Json -Depth 10 | Set-Content -Path $settingsPath -Encoding UTF8
+            Write-Log "Settings.json securely updated."
+        } catch {
+            Write-Log "WARNING: Could not update Settings.json via PowerShell. $_"
+        }
+    } else {
+        Write-Log "WARNING: Settings.json not found at '$settingsPath'."
+    }
 }
 
 # ── Step 1: Test SQL Server connectivity ──
@@ -203,7 +209,7 @@ else {
 $masterConn.Close()
 
 # ── Step 5: Run EF Core migrations via the app ──
-Write-Log "Running EF Core migrations..."
+Write-Log "Running EF Core migrations (applies only pending changes — existing data is preserved)..."
 $exePath = Join-Path $AppPath "RVMSService.exe"
 if (-not (Test-Path $exePath)) {
     Write-Log "ERROR: RVMSService.exe not found at '$exePath'"

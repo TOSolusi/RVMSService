@@ -345,7 +345,7 @@ namespace RVMSService.Controllers
         }
 
         //get visits which return DOTVisitModel
-        [Authorize(Roles = "Admin, Operator, Security")]
+        [Authorize(Roles = "Admin, Operator, Supervisor")]
         [HttpGet("getDOTVisitByDateRangeByGateId")]
         public async Task<List<DOTVisitReturnModel>> GetDOTVisitByDateRangeByGateId([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] Guid gateId)
         {
@@ -385,7 +385,7 @@ namespace RVMSService.Controllers
             return dotVisits;
         }
 
-        [Authorize(Roles = "Admin, Operator, Security")]
+        [Authorize(Roles = "Admin, Operator, Supervisor")]
         [HttpPost("SignOutVisit")]
         public async Task<bool> SignOutVisit(DOTVisitModel dotVisit)
         {
@@ -454,7 +454,7 @@ namespace RVMSService.Controllers
         }
 
         //get visits which return DOTVisitModel for admin
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Supervisor")]
         [HttpGet("getDOTVisitsByDateRange")]
         public async Task<List<DOTVisitReturnModel>> GetDOTVisitByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
