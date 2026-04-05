@@ -477,5 +477,45 @@ namespace RVMSService.Controllers
                 roles = roles.FirstOrDefault()
             });
         }
+
+        // POST: api/User/refresh-token
+        [Authorize]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var userName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return Unauthorized(new { message = "Invalid token." });
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id)
+    };
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"] ?? "your_secret_key_here"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtIssuer"] ?? "authcheck",
+                audience: null,
+                claims: claims,
+                expires: DateTime.Now.AddHours(1),
+                signingCredentials: creds);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            _logger.LogInformation("Token refreshed for user {UserName}", user.UserName);
+
+            return Ok(new
+            {
+                token = tokenString,
+                userName = user.UserName,
+                roles = roles.FirstOrDefault()
+            });
+        }
     }
 }
