@@ -52,7 +52,17 @@ namespace RVMSService.Services
                     var doorNumber = await _context.Gates.Where(g => g.GateId == dotVisit.visit.GateId).Select(g => g.DoorNumber).FirstOrDefaultAsync();
                     if (doorNumber != null)
                     {
-                        await _accessControlService.AllowAccess((int)doorNumber);
+                        try
+                        {
+                            // await _accessControlService.AllowAccess((int)doorNumber);
+                            _ = _accessControlService.AllowAccess((int)doorNumber);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Error occurred while allowing access to door {doorNumber}");
+                            // Optionally, you can choose to continue without throwing an exception here
+
+                        }
                     }
                 }
 

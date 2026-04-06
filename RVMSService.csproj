@@ -8,14 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Settings\TelegramMessageTemplate.html" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Settings\TelegramEmailTemplate.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Settings\TelegramMessageTemplate.html">
+    <Content Include="Settings\TelegramMessageTemplatebak.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

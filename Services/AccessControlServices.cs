@@ -49,12 +49,17 @@ namespace RVMSService.Services
             }
             catch (Exception ex)
 
-                {
-                    _logger.LogError(ex, "Error occurred while allowing access for GlobalDoorNumber: {GlobalDoorNumber}", globalDoorNumber);
-                    throw;
-                }
-            
+            {
+                _logger.LogError(ex, "Error occurred while allowing access for GlobalDoorNumber: {GlobalDoorNumber}", globalDoorNumber);
+                throw;
+            }
 
+            //var url = $"http://{accessControlGateway}:{accessControlGatewayPort}/api/access/allowaccess";
+
+            ////initialize httpclient
+            ////_httpClient = new HttpClient();
+            //_ = await _httpClient.PostAsync($"{url}?globalDoorNumber={globalDoorNumber}", null);
+            //return true;
         }
 
     }
