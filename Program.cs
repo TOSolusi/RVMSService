@@ -18,11 +18,13 @@ namespace RVMSService
 {
     public class Program
     {
+        public static string ServerVersion { get; } = "1.5.3";       
         public static JObject SettingsConfig { get; set; }
         public static string FileSettings { get; set; }
         public string ConnString { get; set; }
         public string serverAddress { get; set; }
         public static async Task Main(string[] args)
+
 
 
         {
@@ -266,7 +268,7 @@ namespace RVMSService
 
             }
 
-
+            app.Logger.LogInformation("Server version: {Version}", ServerVersion);
             app.Logger.LogInformation("Starting web host");
             app.Run();
 

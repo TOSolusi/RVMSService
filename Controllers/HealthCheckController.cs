@@ -10,6 +10,7 @@ namespace RVMSService.Controllers
     {
 
        
+        private string _version;
 
         private readonly ILogger<HealthCheckService> _logger;
         private readonly IHealthCheckService _healthCheck;
@@ -18,7 +19,7 @@ namespace RVMSService.Controllers
         {
             _logger = logger;
             _healthCheck = healthCheck;
-
+           
         }
 
         // GET: api/HealthCheck/isServerOK
@@ -33,12 +34,12 @@ namespace RVMSService.Controllers
                 if (isServerOK)
                 {
                     _logger.LogInformation("Server is OK");
-                    return Ok(new { status = "OK", message = "Server is operational." });
+                    return Ok(new { status = "OK", message = "Server is operational.", version = Program.ServerVersion });
                 }
                 else
                 {
                     _logger.LogWarning("Server is not OK");
-                    return StatusCode(503, new { status = "Service Unavailable", message = "Server is experiencing issues." });
+                    return StatusCode(503, new { status = "Service Unavailable", message = "Server is experiencing issues." , version = Program.ServerVersion });
                 }
             }
             catch (Exception ex)
