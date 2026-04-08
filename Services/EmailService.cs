@@ -50,5 +50,25 @@ namespace RVMSService.Services
                 throw;
             }
         }
+
+        public async Task<string> LoadTemplateAsync(string templateFileName, Dictionary<string, string> placeholders)
+        {
+            var templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", templateFileName);
+
+            if (!System.IO.File.Exists(templatePath))
+            {
+                _logger.LogWarning("Email template not found at {Path}", templatePath);
+                return string.Empty;
+            }
+
+            var content = await System.IO.File.ReadAllTextAsync(templatePath);
+
+            foreach (var kvp in placeholders)
+            {
+                content = content.Replace($"{{{{{kvp.Key}}}}}", kvp.Value);
+            }
+
+            return content;
+        }
     }
 }

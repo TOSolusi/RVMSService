@@ -212,68 +212,96 @@ namespace RVMSService.Controllers
                     {
                         var subject = "RVMS - Link Your Telegram for Visitor Notifications";
 
-                        // Path to the email template file in the Settings directory
-                        var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Settings", "TelegramEmailTemplate.html");
+                        //// Path to the email template file in the Settings directory
+                        //var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Settings", "TelegramEmailTemplate.html");
 
-                        // Check if the template exists, otherwise fallback or throw an error
+                        //// Check if the template exists, otherwise fallback or throw an error
+                        //if (!System.IO.File.Exists(templatePath))
+                        //{
+                        //    _logger.LogWarning("Email template not found at {Path}", templatePath);
+                        //    // You can throw an exception or handle it as required.
+
+
+                        //    var htmlBody = $@"
+                        //    <html>
+                        //    <body style='font-family: Arial, sans-serif; color: #333;'>
+                        //        <h2>Hello {destination.Owner_Name},</h2>
+                        //        <p>You have been set up to receive <strong>visitor notifications</strong> for:</p>
+                        //        <p style='font-size: 16px;'>📍 <strong>{destination.Address}</strong></p>
+                        //        <p>To start receiving notifications on Telegram, click the button below:</p>
+                        //        <p style='margin: 24px 0;'>
+                        //            <a href='{link}'
+                        //               style='background-color: #0088cc; color: white; padding: 12px 24px;
+                        //                      text-decoration: none; border-radius: 6px; font-size: 16px;'>
+                        //                🔗 Connect Telegram
+                        //            </a>
+                        //        </p>
+                        //        <p style='color: #888; font-size: 13px;'>
+                        //            Or copy this link into your browser:<br/>
+                        //            <a href='{link}'>{link}</a>
+                        //        </p>
+                        //        <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'/>
+                        //        <p style='color: #999; font-size: 12px;'>RVMS Visitor Management System</p>
+                        //    </body>
+                        //    </html>";
+
+                        //// Check if the template exists, otherwise fallback or throw an error
+                        var htmlBody = string.Empty;
+
+                        var templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "TelegramEmailTemplate.html");
                         if (!System.IO.File.Exists(templatePath))
                         {
                             _logger.LogWarning("Email template not found at {Path}", templatePath);
-                            // You can throw an exception or handle it as required.
-
-                           
-                            var htmlBody = $@"
-                            <html>
-                            <body style='font-family: Arial, sans-serif; color: #333;'>
-                                <h2>Hello {destination.Owner_Name},</h2>
-                                <p>You have been set up to receive <strong>visitor notifications</strong> for:</p>
-                                <p style='font-size: 16px;'>📍 <strong>{destination.Address}</strong></p>
-                                <p>To start receiving notifications on Telegram, click the button below:</p>
-                                <p style='margin: 24px 0;'>
-                                    <a href='{link}'
-                                       style='background-color: #0088cc; color: white; padding: 12px 24px;
-                                              text-decoration: none; border-radius: 6px; font-size: 16px;'>
-                                        🔗 Connect Telegram
-                                    </a>
-                                </p>
-                                <p style='color: #888; font-size: 13px;'>
-                                    Or copy this link into your browser:<br/>
-                                    <a href='{link}'>{link}</a>
-                                </p>
-                                <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'/>
-                                <p style='color: #999; font-size: 12px;'>RVMS Visitor Management System</p>
-                            </body>
-                            </html>";
+                            //    // You can throw an exception or handle it as required.
+                            htmlBody = $@"
+                                <html>
+                                <body style='font-family: Arial, sans-serif; color: #333;'>
+                                    <h2>Hello {destination.Owner_Name},</h2>
+                                    <p>You have been set up to receive <strong>visitor notifications</strong> for:</p>
+                                    <p style='font-size: 16px;'>📍 <strong>{destination.Address}</strong></p>
+                                    <p>To start receiving notifications on Telegram, click the button below:</p>
+                                    <p style='margin: 24px 0;'>
+                                        <a href='{link}'
+                                           style='background-color: #0088cc; color: white; padding: 12px 24px;
+                                                  text-decoration: none; border-radius: 6px; font-size: 16px;'>
+                                            🔗 Connect Telegram
+                                        </a>
+                                    </p>
+                                    <p style='color: #888; font-size: 13px;'>
+                                        Or copy this link into your browser:<br/>
+                                        <a href='{link}'>{link}</a>
+                                    </p>
+                                    <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;'/>
+                                    <p style='color: #999; font-size: 12px;'>RVMS Visitor Management System</p>
+                                </body>
+                                </ html > ";
 
 
 
-                            await _emailService.SendEmailAsync(destination.Owner_Email, subject, htmlBody);
-                            emailSent = true;
-                            _logger.LogInformation("Telegram link email sent to {Email} for destination {DestinationId}",
-                                destination.Owner_Email, destinationId);
                         }
                         else
                         {
-                            // Read the template content and replace placeholders
-                            var templateContent = await System.IO.File.ReadAllTextAsync(templatePath);
-                            var htmlBody = templateContent
-                                .Replace("{{Owner_Name}}", destination.Owner_Name)
-                                .Replace("{{Address}}", destination.Address)
-                                .Replace("{{Link}}", link);
-
-                            await _emailService.SendEmailAsync(destination.Owner_Email, subject, htmlBody);
-                            emailSent = true;
-                            _logger.LogInformation("Telegram link email sent to {Email} for destination {DestinationId}",
-                                destination.Owner_Email, destinationId);
+                            htmlBody = await _emailService.LoadTemplateAsync("TelegramEmailTemplate.html", new Dictionary<string, string>
+                        {
+                            { "Owner_Name", destination.Owner_Name },
+                            { "Address", destination.Address },
+                            { "Link", link }
+                            });
                         }
+
+                        await _emailService.SendEmailAsync(destination.Owner_Email, subject, htmlBody);
+                        emailSent = true;
+                        _logger.LogInformation("Telegram link email sent to {Email} for destination {DestinationId}",
+                            destination.Owner_Email, destinationId);
+
                     }
                     catch (Exception emailEx)
                     {
                         _logger.LogWarning(emailEx, "Failed to send Telegram link email to {Email}", destination.Owner_Email);
                     }
                 }
-                    
-                
+
+
 
                 return Ok(new
                 {
@@ -308,6 +336,6 @@ namespace RVMSService.Controllers
                 return StatusCode(500, new { message = $"Failed to remove Telegram link. {ex.Message}" });
             }
         }
-         
+
     }
 }
