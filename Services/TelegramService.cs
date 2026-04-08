@@ -54,7 +54,8 @@ namespace RVMSService.Services
         {
             try
             {
-                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Settings", "TelegramMessageTemplate.html");
+                //var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Settings", "TelegramMessageTemplate.html"); // This works in development but may fail in production due to different working directory
+                var templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "TelegramMessageTemplate.html");
                 string message;
 
                 if (!System.IO.File.Exists(templatePath))
