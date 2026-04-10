@@ -476,6 +476,7 @@ namespace RVMSService.Controllers
                 token = tokenString,
                 userName = user.UserName,
                 roles = roles.FirstOrDefault()
+
             });
         }
 
@@ -515,7 +516,8 @@ namespace RVMSService.Controllers
             {
                 token = tokenString,
                 userName = user.UserName,
-                roles = roles.FirstOrDefault()
+                roles = roles.FirstOrDefault(),
+                FullName = user.FullName
             });
         }
     }
