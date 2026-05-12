@@ -1,5 +1,5 @@
 #define MyAppName "RVMS Service"
-#define MyAppVersion "1.4.1"
+#define MyAppVersion "1.5.9"
 #define MyAppPublisher "Total Optima Solusi"
 #define MyAppExeName "RVMSService.exe"
 #define ServiceName "RVMSService"
@@ -260,6 +260,90 @@ begin
   end;
 
   SaveStringToFile(SettingsPath, AnsiString(Content), False);
+end;
+
+{ ── Test SQL Server connection before proceeding ── }
+function TestSqlConnection(const Server, UseIntegrated, SqlUser, SqlPassword: String): Boolean;
+var
+  TempScript, TempResult: String;
+  PSScript: String;
+  ResultCode: Integer;
+  AnsiResult: AnsiString;
+  ResultContent: String;
+begin
+  Result := False;
+  TempScript := ExpandConstant('{tmp}\RVMSConnTest.ps1');
+  TempResult := ExpandConstant('{tmp}\RVMSConnTest.txt');
+
+  if Lowercase(UseIntegrated) = 'yes' then
+    PSScript :=
+      '$cs = "Server=' + Server + ';Database=master;Integrated Security=True;' +
+      'Encrypt=False;TrustServerCertificate=True;Connection Timeout=8;"'
+  else
+    PSScript :=
+      '$cs = "Server=' + Server + ';Database=master;User ID=' + SqlUser +
+      ';Password=' + SqlPassword + ';Integrated Security=False;' +
+      'Encrypt=False;TrustServerCertificate=True;Connection Timeout=8;"';
+
+  PSScript := PSScript + #13#10 +
+    'try {' + #13#10 +
+    '  $conn = New-Object System.Data.SqlClient.SqlConnection($cs)' + #13#10 +
+    '  $conn.Open()' + #13#10 +
+    '  $conn.Close()' + #13#10 +
+    '  Set-Content -Path "' + TempResult + '" -Value "OK"' + #13#10 +
+    '} catch {' + #13#10 +
+    '  Set-Content -Path "' + TempResult + '" -Value ("FAIL: " + $_.Exception.Message)' + #13#10 +
+    '}';
+
+  SaveStringToFile(TempScript, AnsiString(PSScript), False);
+
+  Exec('powershell.exe',
+    '-ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "' + TempScript + '"',
+    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  if FileExists(TempResult) then
+  begin
+    LoadStringFromFile(TempResult, AnsiResult);
+    ResultContent := Trim(String(AnsiResult));
+    if Copy(ResultContent, 1, 2) = 'OK' then
+      Result := True
+    else
+      MsgBox(
+        'Cannot connect to SQL Server "' + Server + '".' + #13#10 + #13#10 +
+        ResultContent + #13#10 + #13#10 +
+        'Please verify the server name and credentials, then try again.',
+        mbError, MB_OK);
+  end
+  else
+    MsgBox('Connection test failed: the test script did not produce a result.' + #13#10 +
+      'Ensure PowerShell is available and try again.', mbError, MB_OK);
+
+  DeleteFile(TempScript);
+  DeleteFile(TempResult);
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+
+  { ── Test on ConfigPage when using Integrated Security ── }
+  if CurPageID = ConfigPage.ID then
+  begin
+    if Lowercase(ConfigPage.Values[3]) = 'yes' then
+    begin
+      Result := TestSqlConnection(
+        ConfigPage.Values[0], 'yes', '', '');
+    end;
+    { SQL Auth: defer test to AuthPage so credentials are filled first }
+  end
+
+  { ── Test on AuthPage when using SQL Authentication ── }
+  else if CurPageID = AuthPage.ID then
+  begin
+    Result := TestSqlConnection(
+      ConfigPage.Values[0], 'no',
+      AuthPage.Values[0], AuthPage.Values[1]);
+  end;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

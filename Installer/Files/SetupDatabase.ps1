@@ -86,7 +86,11 @@ if ($IsUpgrade -eq "yes") {
 Write-Log "Testing SQL Server connectivity..."
 try {
     $masterConn = New-Object System.Data.SqlClient.SqlConnection
-    $masterConn.ConnectionString = "Server=$SqlServer;Database=master;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;Connection Timeout=10;"
+    if ($UseIntegrated -eq "yes") {
+        $masterConn.ConnectionString = "Server=$SqlServer;Database=master;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;Connection Timeout=10;"
+    } else {
+        $masterConn.ConnectionString = "Server=$SqlServer;Database=master;User ID=$SqlUser;Password=$SqlPassword;Integrated Security=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=10;"
+    }
     $masterConn.Open()
     Write-Log "Connected to SQL Server successfully."
 }

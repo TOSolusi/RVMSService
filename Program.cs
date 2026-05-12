@@ -18,7 +18,7 @@ namespace RVMSService
 {
     public class Program
     {
-        public static string ServerVersion { get; } = "1.5.8";       
+        public static string ServerVersion { get; } = "1.5.9";       
         public static JObject SettingsConfig { get; set; }
         public static string FileSettings { get; set; }
         public string ConnString { get; set; }
