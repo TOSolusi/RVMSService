@@ -29,6 +29,8 @@ Source: "Files\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createa
 ; so user customisations are never lost.
 Source: "SetupDatabase.ps1"; DestDir: "{app}\Installer"; Flags: ignoreversion
 
+
+
 [Dirs]
 Name: "{app}\Logs"; Permissions: everyone-full
 Name: "{app}\Photos"; Permissions: everyone-full
@@ -43,8 +45,15 @@ Filename: "sc.exe"; Parameters: "delete {#ServiceName}"; Flags: runhidden waitun
 ; --- Set file permissions ---
 Filename: "icacls.exe"; Parameters: """{app}\Settings\Settings.json"" /grant *S-1-5-32-545:(M)"; Flags: runhidden waituntilterminated; StatusMsg: "Setting file permissions..."
 
+
 ; --- Database setup (create DB + login + migrations) ---
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\Installer\SetupDatabase.ps1"" -SqlServer ""{code:GetSqlServer}"" -DatabaseName ""{code:GetDatabaseName}"" -UseIntegrated ""{code:GetUseIntegrated}"" -SqlUser ""{code:GetSqlUser}"" -SqlPassword ""{code:GetSqlPassword}"" -AppPath ""{app}"" -IsUpgrade ""{code:GetIsUpgrade}"""; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
+;Filename: "cmd.exe"; Parameters: "/c """"powershell.exe"" -ExecutionPolicy Bypass -NoProfile -NonInteractive -Command ""& '{app}\Installer\SetupDatabase.ps1' -SqlServer '{code:GetSqlServer}' -DatabaseName '{code:GetDatabaseName}' -UseIntegrated '{code:GetUseIntegrated}' -SqlUser '{code:GetSqlUser}' -SqlPassword '{code:GetSqlPassword}' -AppPath '{app}' -IsUpgrade '{code:GetIsUpgrade}' -HttpPort '{code:GetHttpPort}'"""""; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
+Filename: "powershell.exe"; Parameters: "-NoExit -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""& ([scriptblock]::Create([System.IO.File]::ReadAllText('{app}\Installer\SetupDatabase.ps1'))) -SqlServer '{code:GetSqlServer}' -DatabaseName '{code:GetDatabaseName}' -UseIntegrated '{code:GetUseIntegrated}' -SqlUser '{code:GetSqlUser}' -SqlPassword '{code:GetSqlPassword}' -AppPath '{app}' -IsUpgrade '{code:GetIsUpgrade}' -HttpPort '{code:GetHttpPort}'""";  StatusMsg: "Setting up database..."
+;Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""& ([scriptblock]::Create([System.IO.File]::ReadAllText('{app}\Installer\SetupDatabase.ps1'))) -SqlServer '{code:GetSqlServer}' -DatabaseName '{code:GetDatabaseName}' -UseIntegrated '{code:GetUseIntegrated}' -SqlUser '{code:GetSqlUser}' -SqlPassword '{code:GetSqlPassword}' -AppPath '{app}' -IsUpgrade '{code:GetIsUpgrade}' -HttpPort '{code:GetHttpPort}'"""; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
+;Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""& ([scriptblock]::Create([System.IO.File]::ReadAllText('{app}\Installer\SetupDatabase.ps1'))) -SqlServer '{code:GetSqlServer}' -DatabaseName '{code:GetDatabaseName}' -UseIntegrated '{code:GetUseIntegrated}' -SqlUser '{code:GetSqlUser}' -SqlPassword '{code:GetSqlPassword}' -AppPath '{app}' -IsUpgrade '{code:GetIsUpgrade}'"""; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
+
+; Then run using 64-bit PowerShell explicitly via {sysnative}
+;Filename: "{sysnative}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NonInteractive -NoProfile -File ""{app}\Installer\SetupDatabase.ps1"" -SqlServer ""{code:GetSqlServer}"" -DatabaseName ""{code:GetDatabaseName}"" -UseIntegrated ""{code:GetUseIntegrated}"" -SqlUser ""{code:GetSqlUser}"" -SqlPassword ""{code:GetSqlPassword}"" -AppPath ""{app}"" -IsUpgrade ""{code:GetIsUpgrade}"" "; Flags: runhidden waituntilterminated; StatusMsg: "Setting up database..."
 
 ; --- Firewall rule ---
 Filename: "netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#MyAppName}"""; Flags: runhidden waituntilterminated
@@ -101,7 +110,8 @@ var
   Content, Val, ServerAddr: String;
   ColonPos: Integer;
 begin
-  SettingsPath := ExpandConstant('{app}\Settings\Settings.json');
+ 
+  SettingsPath := WizardDirValue + '\Settings\Settings.json';
   if not FileExists(SettingsPath) then Exit;
   if not LoadStringFromFile(SettingsPath, AnsiContent) then Exit;
   Content := String(AnsiContent);
@@ -158,20 +168,16 @@ begin
   AuthPage.Add('SQL Password:', True);
   AuthPage.Values[0] := 'RVMSUser';
   AuthPage.Values[1] := '';
+
+  { Pre-populate from existing install so the user sees current values }
+  ReadExistingSettings;
+
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
-  { On upgrade skip both configuration pages — existing settings are preserved }
-  if (PageID = ConfigPage.ID) or (PageID = AuthPage.ID) then
-  begin
-    if FileExists(ExpandConstant('{app}\Settings\Settings.json')) then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
+ { Only skip AuthPage when using Integrated Security — never skip ConfigPage }
   if PageID = AuthPage.ID then
     Result := (Lowercase(ConfigPage.Values[3]) = 'yes');
 end;
@@ -359,24 +365,21 @@ begin
     UpgradeDetected := FileExists(SettingsPath);
     if UpgradeDetected then
     begin
-      { Populate wizard-page values from existing config so every
-        Get* function (used by [Run]) returns the correct value }
-      ReadExistingSettings;
-      { Back up the user's Settings.json before the file-copy overwrites it }
+       { Back up the user's Settings.json before the file-copy overwrites it }
       FileCopy(SettingsPath, BackupPath, False);
+      { NOTE: ReadExistingSettings was already called in InitializeWizard }
     end;
   end;
 
   if CurStep = ssPostInstall then
   begin
-    if UpgradeDetected then
+  if UpgradeDetected then
     begin
-      { Restore the original Settings.json — user customisations preserved }
+      { Discard the restored backup — user has confirmed new values via wizard }
       if FileExists(BackupPath) then
-      begin
-        DeleteFile(SettingsPath);
-        RenameFile(BackupPath, SettingsPath);
-      end;
+        DeleteFile(BackupPath);
+      { Apply wizard values (may have changed) to the freshly deployed template }
+      UpdateSettingsFile;
     end
     else
       { Fresh install — apply wizard values to the template Settings.json }

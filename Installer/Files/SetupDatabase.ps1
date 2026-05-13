@@ -14,7 +14,8 @@ param(
     [string]$SqlUser,
     [string]$SqlPassword,
     [string]$AppPath,
-    [string]$IsUpgrade = "no"
+    [string]$IsUpgrade = "no",
+    [string]$HttpPort = "5050"   # <-- NEW PARAMETER
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,6 +52,10 @@ if ($IsUpgrade -eq "yes") {
             # Apply the user database overrides natively to the JSON object
             $jsonObj.Server = $SqlServer
             $jsonObj.Database = $DatabaseName
+             # --- UPDATE PORT HERE ---
+            if (-not [string]::IsNullOrWhiteSpace($HttpPort)) {
+                $jsonObj.ServerAddresshttp = "0.0.0.0:$HttpPort"
+            }
 
             if ($UseIntegrated -eq "yes") {
                 $jsonObj.IntegratedSecurity = "true"
